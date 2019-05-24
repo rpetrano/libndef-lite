@@ -54,91 +54,12 @@ use std::collections::VecDeque;
 use std::str::from_utf8;
 use std::iter::FromIterator;
 
-/// # Type Name Format Field types 
-/// 
-/// Represents 3-bit value describing record type, sets expectation for structure/content of record
-#[derive(Debug)]
-pub enum TypeNameFormat {
-    /// Record does not contain any information
-    Empty = 0x00,
+// Library modules
+pub mod tnf;
+pub mod record_header;
+pub mod well_known_types;
 
-    /// Well Known Data Type - Data is defined by Record Type Definition (RTD) specification from NFC Forum
-    WellKnown = 0x01,
-
-    /// MIME Media - Data is one of the data types normally found in internet communications defined in RFC 2046
-    MIMEMedia = 0x02,
-
-    /// Absolute Uniform Resource Identifier - Pointer to a resource following the RFC 3986 syntax
-    AbsoluteURI = 0x03,
-
-    /// User-defined data that relies on the format specified by the RTD specification
-    External = 0x04,
-
-    /// Unknown data type - **Type length must be set to 0**
-    Unknown = 0x05,
-
-    /// Indicates this payload is a part of a chunked record, with the type unchanged from the first chunk
-    Unchanged = 0x06,
-
-    // Not actually implemented, but the value 0x07 is reserved by the NFC Forum
-    // Reserved = 0x07,
-}
-
-impl From<u8> for TypeNameFormat {
-    /// Implementation of From trait for TypeNameFormat from byte
-    /// 
-    /// *Note:* Any unknown/unsupported fields are treated as Unknown (0x05) type as per spec
-    fn from(value: u8) -> Self {
-        println!("{}", value);
-        match value {
-            0x00 => TypeNameFormat::Empty,
-            0x01 => TypeNameFormat::WellKnown,
-            0x02 => TypeNameFormat::MIMEMedia,
-            0x03 => TypeNameFormat::AbsoluteURI,
-            0x04 => TypeNameFormat::External,
-            0x05 => TypeNameFormat::Unknown,
-            0x06 => TypeNameFormat::Unchanged,
-            _ => TypeNameFormat::Unknown
-        }
-    }
-}
-
-/// # NDEF Record Header
-#[derive(Debug)]
-pub struct RecordHeader {
-    /// Type Name Format - identifies type of content the record contains
-    pub tnf: TypeNameFormat,
-
-    /// ID Length Flag - Indicates whether ID Length Field is present
-    pub il: bool,
-
-    /// Short Record Flag - Indicates if PAYLOAD LENGTH field is 1 byte (0-255) or less
-    pub sr: bool,
-
-    /// Chunk Flag - Indicates if this the first record chunk or in the middle
-    pub cf: bool,
-
-    /// Message End Flag - Indicates if this is the last record in the message
-    pub me: bool,
-
-    /// Message Begin - Indicates if this is the start of an NDEF message
-    pub mb: bool,
-}
-
-impl RecordHeader {
-    /// Create a new RecordHeader object from an octet of data
-    pub fn new(value: u8) -> Self {
-        println!("RecordHeader: {}", value);
-        RecordHeader {
-            mb: ((value >> 0) & 0x80) != 0,
-            me: ((value >> 1) & 0x40) != 0,
-            cf: ((value >> 2) & 0x20) != 0,
-            sr: ((value >> 3) & 0x10) != 0,
-            il: ((value >> 4) & 0x08) != 0,
-            tnf: TypeNameFormat::from((value >> 5) & 0x07)
-        }
-    }
-}
+use record_header::RecordHeader;
 
 /// NDEF record struct
 #[derive(Debug)]
@@ -291,59 +212,6 @@ impl TryFrom<&[u8]> for NDEFRecord {
     }
 }
 
-/// Well-Known Record - URI - [TNF Record Type `0x01`](enum.TypeNameFormat.html#variant.WellKnown)
-/// 
-/// Well Known Type is "U" ([Type](struct.Record.html#structfield.record_type) field will be `0x55`)
-pub struct URIRecord {
-    /// This field allows the uri_field to be compacted, by expressing common protocols as a 1 byte value
-    /// 
-    /// Table taken from NFC Forum standard
-    /// 
-    /// | Decimal | Hex        | Protocol                   |
-    /// | ------- | ---------- | -------------------------- |
-    /// |    0    | 0x00       | None - nothing prepended   |
-	/// |    1    | 0x01       | http://www.                |
-	/// |    2    | 0x02       | https://www.               |
-	/// |    3    | 0x03       | http://                    |
-	/// |    4    | 0x04       | https://                   |
-	/// |    5    | 0x05       | tel:                       | 
-	/// |    6    | 0x06       | mailto:                    |
-	/// |    7    | 0x07       | ftp://anonymous:anonymous@ |
-	/// |    8    | 0x08       | ftp://ftp.                 |
-	/// |    9    | 0x09       | ftps://                    |
-	/// |    10   | 0x0A       | sftp://                    |
-	/// |    11   | 0x0B       | smb://                     |
-	/// |    12   | 0x0C       | nfs://                     |
-	/// |    13   | 0x0D       | ftp://                     |
-	/// |    14   | 0x0E       | dav://                     |
-	/// |    15   | 0x0F       | news:                      |
-	/// |    16   | 0x10       | telnet://                  |
-	/// |    17   | 0x11       | imap:                      |
-	/// |    18   | 0x12       | rtsp://                    |
-	/// |    19   | 0x13       | urn:                       |
-	/// |    20   | 0x14       | pop:                       |
-	/// |    21   | 0x15       | sip:                       |
-	/// |    22   | 0x16       | sips:                      |
-	/// |    23   | 0x17       | tftp:                      |
-	/// |    24   | 0x18       | btspp://                   |
-	/// |    25   | 0x19       | btl2cap://                 |
-	/// |    26   | 0x1A       | btgoep://                  |
-	/// |    27   | 0x1B       | tcpobex://                 |
-	/// |    28   | 0x1C       | irdaobex://                |
-	/// |    29   | 0x1D       | file://                    |
-	/// |    30   | 0x1E       | urn:epc:id:                |
-	/// |    31   | 0x1F       | urn:epc:tag:               |
-	/// |    32   | 0x20       | urn:epc:pat:               |
-	/// |    33   | 0x21       | urn:epc:raw:               |
-	/// |    34   | 0x22       | urn:epc:                   |
-	/// |    35   | 0x23       | urn:nfc:                   |
-    /// | 36…255  | 0x24..0xFF | RFU - **Do not use**       |
-    pub identifier_code: u8,
-
-    /// This field must be encoded as UTF-8, unless the URI scheme specifies differently
-    pub uri_field: &'static str,
-}
-
 #[no_mangle]
 pub extern fn ndef_recordFromBytes(bytes: *const uint8_t, len: size_t) -> *mut NDEFRecord {
     let record_bytes: &[u8] = unsafe {
@@ -361,5 +229,59 @@ pub extern fn ndef_recordFromBytes(bytes: *const uint8_t, len: size_t) -> *mut N
             eprintln!("{}", err);
             ptr::null_mut()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn ndef_from_bytes_valid() {
+        use super::{NDEFRecord, RecordHeader, tnf::TypeNameFormat};
+        use std::convert::TryFrom;
+        use std::str::from_utf8;
+
+        let test_bytes: Vec<u8> = vec![
+            0xd1, // Record Header
+                // - Message Begin (1b), Message End (1b), Last chunk (0b), Short Record (1b)
+                // - ID Length not present (0b), NFC Forum Well Known Type TNF (0b001)
+            0x01, // Type length - Payload type field is 1 octet long (single "T" char)
+                // No ID Length
+            0x0d, // Payload length 
+                // - 13 octet (character) long payload
+                // - SR flag set
+            0x54, // Well Known Type - Text (ASCII "T")
+            0x85, // Text encoded in UTF-8 (1b), RFU (always 0b), IANA language code "en-US" length = 5 (0b00101)
+            // ISO/IANA language code "en-US" encoded in US-ASCII
+            0x65, 0x6e, 0x2d, 0x55, 0x53,
+            // UTF-8 encoded text payload ("Hello, World")
+            0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x21
+        ];
+
+        let expected_header = RecordHeader {
+            mb: true,
+            me: true,
+            cf: false,
+            sr: true,
+            il: false,
+            tnf: TypeNameFormat::WellKnown
+        };
+
+        let record = match NDEFRecord::try_from(test_bytes.as_slice()) {
+            Ok(record) => record,
+            Err(err) => panic!(err)
+        };
+
+        let text_payload = match from_utf8(&record.payload) {
+            Ok(txt) => txt,
+            Err(err) => panic!("{}", err)
+        };
+
+        assert_eq!(record.id_length, None);
+        assert_eq!(record.id_field, None);
+        assert_eq!(record.header, expected_header);
+        assert_eq!(record.payload_length, 13);
+        assert_eq!(record.record_type, "T");
+        assert_eq!(record.type_length, 1);
+        assert_eq!(text_payload, "Hello, World");
     }
 }
