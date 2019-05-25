@@ -52,7 +52,7 @@ use std::collections::VecDeque;
 use std::convert::{From, TryFrom};
 use std::iter::FromIterator;
 use std::str::from_utf8;
-use std::{ptr, slice};
+use std::{mem, ptr, slice};
 
 // Library modules
 pub mod record_header;
@@ -61,6 +61,13 @@ mod types;
 pub mod well_known_types;
 
 use record_header::RecordHeader;
+
+/// A byte buffer paired with the length
+#[repr(C)]
+pub struct RecordSpan {
+    buf: *mut u8,
+    len: usize,
+}
 
 /// NDEF record struct
 #[derive(Debug, PartialEq)]
@@ -244,6 +251,42 @@ pub extern "C" fn ndef_recordFromBytes(bytes: *const uint8_t, len: size_t) -> *m
     }
 }
 
+#[no_mangle]
+pub extern "C" fn ndef_freeRecord(record: *mut NDEFRecord) {
+    // Allow Rust to take ownership of pointer that will be freed once Box goes out of scope
+    unsafe {
+        Box::from_raw(record);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn ndef_recordToBytes(record: *mut NDEFRecord) -> *mut RecordSpan {
+    let mut data: Vec<u8> = Vec::new();
+
+    // Add Record Header byte
+    unsafe {
+        data.push((*record).header.into());
+    }
+
+    // Convert data vector to pointer to return
+    let mut buf = data.into_boxed_slice();
+    let buf_ptr = buf.as_mut_ptr();
+    mem::forget(buf);
+    Box::into_raw(Box::new(RecordSpan {
+        buf: buf_ptr,
+        len: 0,
+    }))
+}
+
+#[no_mangle]
+pub extern "C" fn ndef_freeSpan(span: *mut RecordSpan) {
+    let buf = unsafe { std::slice::from_raw_parts_mut((*span).buf, (*span).len) };
+    let ptr = buf.as_mut_ptr();
+    unsafe {
+        Box::from_raw(ptr);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
@@ -262,7 +305,7 @@ mod tests {
         let type_length: u8 = 0x01;
 
         // Payload length
-        // - 13 octet (character) long payload
+        // - 19 octet (character) long payload
         // - SR flag set
         let payload_length: u8 = 0x13;
 
@@ -312,7 +355,7 @@ mod tests {
         if ((record.payload[0] >> 7) & 0x01) != 0 {
             // Decoding UTF-8
             // Ignore language code length and language code, last 5 bits are the ISO/IANA language code bytes length
-            let lang_code_len = record.payload[0] & 0x17;
+            let lang_code_len = record.payload[0] & 0x1f;
 
             // Ignore UTF-x/RFU/IANA code length byte and then ISO/IANA language code bytes
             let num_ignore_bytes = (1 + lang_code_len) as usize;
@@ -324,7 +367,7 @@ mod tests {
             };
         } else {
             // Decoding UTF-16 is not supported currently
-            panic!("Oh frick, we can't deal with UTF-16");
+            panic!("UTF-16 encoding not currently supported");
             // text_payload = match String::from_utf16(record.payload.into()) {
             //     Ok(txt) => txt,
             //     Err(err) => panic!("{}", err),

@@ -1,4 +1,5 @@
 use crate::tnf::TypeNameFormat;
+use std::convert::Into;
 
 /// # NDEF Record Header
 #[derive(Debug, PartialEq)]
@@ -36,12 +37,26 @@ impl RecordHeader {
     }
 }
 
+impl Into<u8> for RecordHeader {
+    fn into(self) -> u8 {
+        let mut byte: u8 = 0x00;
+        if self.mb { byte |= 0x80; }
+        if self.me { byte |= 0x40; }
+        if self.cf { byte |= 0x20; }
+        if self.sr { byte |= 0x10; }
+        if self.il { byte |= 0x08; }
+        byte |= self.tnf as u8;
+
+        byte
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use super::{RecordHeader, TypeNameFormat};
+
     #[test]
     fn new_record_header_simple() {
-        use super::{RecordHeader, TypeNameFormat};
-
         let new_byte: u8 = 0xff;
         let expected = RecordHeader {
             mb: true,
@@ -58,8 +73,6 @@ mod tests {
 
     #[test]
     fn new_record_header_short() {
-        use super::{RecordHeader, TypeNameFormat};
-
         let new_byte: u8 = 0xd1;
         let expected = RecordHeader {
             mb: true,
@@ -72,5 +85,19 @@ mod tests {
         let record_header = RecordHeader::new(new_byte);
         
         assert_eq!(expected, record_header);
+    }
+
+    #[test]
+    fn header_to_byte() {
+        let header = RecordHeader {
+            mb: true,
+            me: true,
+            cf: false,
+            sr: true,
+            il: false,
+            tnf: TypeNameFormat::WellKnown
+        };
+        let byte: u8 = header.into();
+        assert_eq!(byte, 0b11010001);
     }
 }
