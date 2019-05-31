@@ -48,11 +48,13 @@
 extern crate libc;
 
 use libc::{size_t, uint8_t};
-use std::collections::VecDeque;
-use std::convert::{From, TryFrom};
-use std::iter::FromIterator;
-use std::str::from_utf8;
-use std::{mem, ptr, slice};
+use std::{
+    collections::VecDeque,
+    convert::{From, TryFrom},
+    iter::FromIterator,
+    mem, ptr, slice,
+    str::from_utf8,
+};
 
 // Library modules
 pub mod record_header;
@@ -70,7 +72,7 @@ pub struct RecordSpan {
 }
 
 /// NDEF record struct
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct NDEFRecord {
     /// NDEF Record header object
     pub header: RecordHeader,
@@ -121,7 +123,6 @@ impl TryFrom<&[u8]> for NDEFRecord {
 
         // Read first byte into flags and TNF bits - first two bytes are sure to exist due to size check at start
         let header = RecordHeader::new(value.pop_front().unwrap());
-        println!("{:#?}", header);
         let type_length: u8 = value.pop_front().unwrap();
         let payload_length: u32 = match header.sr {
             true => value.pop_front().unwrap() as u32,
@@ -259,82 +260,89 @@ pub extern "C" fn ndef_freeRecord(record: *mut NDEFRecord) {
     }
 }
 
+/// Converts
 #[no_mangle]
 pub extern "C" fn ndef_recordToBytes(record: *mut NDEFRecord) -> *mut RecordSpan {
     let mut data: Vec<u8> = Vec::new();
+    let record = unsafe { Box::from_raw(record) };
 
     // Add Record Header byte
-    unsafe {
-        data.push((*record).header.into());
+    let header_il = record.header.il;
+    let header_sr = record.header.sr;
+    data.push(record.header.into_byte());
+
+    // Add type length field
+    data.push(record.type_length);
+
+    // Add payload length, dependant on the Short Record flag
+    let payload_len: [u8; 4] = record.payload_length.to_be_bytes();
+    if header_sr {
+        // Short record, append only the last byte for the length. Will be the only one that can be > 0
+        data.push(payload_len[3]);
+    } else {
+        // Not a short record, append all 4 bytes in big endian order
+        data.extend(payload_len.iter());
     }
 
+    // Add ID length if applicable
+    if header_il && record.id_length.is_some() {
+        data.push(record.id_length.unwrap());
+    }
+
+    // Add type field
+    let type_bytes = record.record_type;
+    let type_bytes = type_bytes.as_bytes();
+    assert_eq!(type_bytes.len(), record.type_length as usize);
+    for byte in type_bytes {
+        // Validate each character is valid ASCII
+        assert!(*byte > 31 && *byte != 127);
+        data.push(*byte);
+    }
+
+    // Add ID field if present
+    let id_len = record.id_length.unwrap_or(0);
+    if id_len > 0 {
+        assert!(record.id_field.is_some());
+        let id_field = record.id_field.unwrap();
+        assert_eq!(id_field.len(), id_len as usize);
+        data.extend(id_field.bytes());
+    }
+
+    // Add payload bytes
+    assert_eq!(record.payload.len(), record.payload_length as usize);
+    data.extend(record.payload.into_iter());
+
     // Convert data vector to pointer to return
+    let data_len = data.len();
     let mut buf = data.into_boxed_slice();
     let buf_ptr = buf.as_mut_ptr();
     mem::forget(buf);
     Box::into_raw(Box::new(RecordSpan {
         buf: buf_ptr,
-        len: 0,
+        len: data_len,
     }))
 }
 
 #[no_mangle]
 pub extern "C" fn ndef_freeSpan(span: *mut RecordSpan) {
-    let buf = unsafe { std::slice::from_raw_parts_mut((*span).buf, (*span).len) };
-    let ptr = buf.as_mut_ptr();
     unsafe {
-        Box::from_raw(ptr);
+        // Re-create buffer from buf and len
+        let buf = std::slice::from_raw_parts_mut((*span).buf, (*span).len);
+
+        // Create box objects from buffer and span pointers to be freed
+        Box::from_raw(buf.as_mut_ptr());
+        Box::from_raw(span);
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::{tnf::TypeNameFormat, NDEFRecord, RecordHeader};
+    use std::convert::TryFrom;
+
     #[test]
     fn ndef_from_bytes_valid_text() {
-        use super::{tnf::TypeNameFormat, NDEFRecord, RecordHeader};
-        use std::convert::TryFrom;
-
-        // Record Header
-        // - Message Begin (1b), Message End (1b), Last chunk (0b), Short Record (1b)
-        // - ID Length not present (0b), NFC Forum Well Known Type TNF (0b001)
-        let header_byte: u8 = 0xd1;
-
-        // Type length
-        // - Payload type field is 1 octet long (single "T" char)
-        // - No ID Length
-        let type_length: u8 = 0x01;
-
-        // Payload length
-        // - 19 octet (character) long payload
-        // - SR flag set
-        let payload_length: u8 = 0x13;
-
-        // Well Known Type - Text (ASCII "T")
-        let well_known_type: u8 = 0x54;
-
-        // Text encoding information
-        // - UTF-8 (1b), RFU (always 0b), IANA language code "en-US" length = 5 (0b00101)
-        let text_flag: u8 = 0x85;
-
-        // ISO/IANA language code "en-US" encoded in US-ASCII
-        let lang_code_bytes = vec![0x65, 0x6e, 0x2d, 0x55, 0x53];
-
-        // UTF-8 encoded text payload ("Hello, World")
-        let encoded_text = vec![
-            0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x21,
-        ];
-
-        let mut test_bytes: Vec<u8> = vec![
-            header_byte,
-            type_length,
-            payload_length,
-            well_known_type,
-            text_flag,
-        ];
-
-        // Extend test_bytes with language code and UTF-8 encoded bytes
-        test_bytes.extend(lang_code_bytes);
-        test_bytes.extend(encoded_text);
+        let test_bytes = valid_text_record();
 
         let expected_header = RecordHeader {
             mb: true,
@@ -381,5 +389,51 @@ mod tests {
         assert_eq!(record.record_type, "T");
         assert_eq!(record.type_length, 1);
         assert_eq!(text_payload, "Hello, World!");
+    }
+
+    fn valid_text_record() -> Vec<u8> {
+        // Record Header
+        // - Message Begin (1b), Message End (1b), Last chunk (0b), Short Record (1b)
+        // - ID Length not present (0b), NFC Forum Well Known Type TNF (0b001)
+        let header_byte: u8 = 0xd1;
+
+        // Type length
+        // - Payload type field is 1 octet long (single "T" char)
+        // - No ID Length
+        let type_length: u8 = 0x01;
+
+        // Payload length
+        // - 19 octet (character) long payload
+        // - SR flag set
+        let payload_length: u8 = 0x13;
+
+        // Well Known Type - Text (ASCII "T")
+        let well_known_type: u8 = 0x54;
+
+        // Text encoding information
+        // - UTF-8 (1b), RFU (always 0b), IANA language code "en-US" length = 5 (0b00101)
+        let text_flag: u8 = 0x85;
+
+        // ISO/IANA language code "en-US" encoded in US-ASCII
+        let lang_code_bytes = vec![0x65, 0x6e, 0x2d, 0x55, 0x53];
+
+        // UTF-8 encoded text payload ("Hello, World")
+        let encoded_text = vec![
+            0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x21,
+        ];
+
+        let mut test_bytes: Vec<u8> = vec![
+            header_byte,
+            type_length,
+            payload_length,
+            well_known_type,
+            text_flag,
+        ];
+
+        // Extend test_bytes with language code and UTF-8 encoded bytes
+        test_bytes.extend(lang_code_bytes);
+        test_bytes.extend(encoded_text);
+
+        test_bytes
     }
 }

@@ -5,7 +5,7 @@
 /// # Type Name Format Field types 
 /// 
 /// Represents 3-bit value describing record type, sets expectation for structure/content of record
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TypeNameFormat {
     /// Record does not contain any information
     Empty = 0x00,

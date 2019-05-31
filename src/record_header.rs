@@ -1,8 +1,7 @@
 use crate::tnf::TypeNameFormat;
-use std::convert::Into;
 
 /// # NDEF Record Header
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct RecordHeader {
     /// Type Name Format - identifies type of content the record contains
     pub tnf: TypeNameFormat,
@@ -32,19 +31,27 @@ impl RecordHeader {
             cf: (value & 0x20) != 0,
             sr: (value & 0x10) != 0,
             il: (value & 0x08) != 0,
-            tnf: TypeNameFormat::from(value & 0x07)
+            tnf: TypeNameFormat::from(value & 0x07),
         }
     }
-}
 
-impl Into<u8> for RecordHeader {
-    fn into(self) -> u8 {
+    pub fn into_byte(self) -> u8 {
         let mut byte: u8 = 0x00;
-        if self.mb { byte |= 0x80; }
-        if self.me { byte |= 0x40; }
-        if self.cf { byte |= 0x20; }
-        if self.sr { byte |= 0x10; }
-        if self.il { byte |= 0x08; }
+        if self.mb {
+            byte |= 0x80;
+        }
+        if self.me {
+            byte |= 0x40;
+        }
+        if self.cf {
+            byte |= 0x20;
+        }
+        if self.sr {
+            byte |= 0x10;
+        }
+        if self.il {
+            byte |= 0x08;
+        }
         byte |= self.tnf as u8;
 
         byte
@@ -64,10 +71,10 @@ mod tests {
             cf: true,
             sr: true,
             il: true,
-            tnf: TypeNameFormat::from(7u8)
+            tnf: TypeNameFormat::from(7u8),
         };
         let record_header = RecordHeader::new(new_byte);
-        
+
         assert_eq!(expected, record_header);
     }
 
@@ -80,10 +87,10 @@ mod tests {
             cf: false,
             sr: true,
             il: false,
-            tnf: TypeNameFormat::WellKnown
+            tnf: TypeNameFormat::WellKnown,
         };
         let record_header = RecordHeader::new(new_byte);
-        
+
         assert_eq!(expected, record_header);
     }
 
@@ -95,9 +102,9 @@ mod tests {
             cf: false,
             sr: true,
             il: false,
-            tnf: TypeNameFormat::WellKnown
+            tnf: TypeNameFormat::WellKnown,
         };
-        let byte: u8 = header.into();
+        let byte: u8 = header.into_byte();
         assert_eq!(byte, 0b11010001);
     }
 }
