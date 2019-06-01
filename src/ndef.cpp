@@ -57,13 +57,45 @@
  * \bug No known bugs
  */
 
-#include <array>
+#include <deque>
 
 #include "ndef.hpp"
+#include "span.hpp"
 
 namespace ndef {
-  // Allows us to convert from the raw bytes collected from C (converted to u8) into a Record struct
-  Record fromBytes(std::array<uint8_t> bytes) {
-    
+  /// Wrapper around fromByte(std::vector<uint8_t>) that converts the array to a vector
+  Record fromBytes(uint8_t bytes[], uint64_t size) {
+    // Create vector from byte array
+    std::vector<uint8_t> bytesVec(bytes, bytes + size);
+
+    return fromBytes(bytesVec);
+  }
+
+  /// Wrapper around fromByte(std::vector<uint8_t>) that converts the span array to a vector
+  Record fromBytes(span<uint8_t> bytes) {
+    // Create vector from byte array
+    auto bytesPtr = bytes.data();
+    std::vector<uint8_t> bytesVec(bytesPtr, bytesPtr + bytes.size());
+
+    return fromBytes(bytesVec);
+  }
+
+  /// Allows us to convert from the raw bytes from the NFC tag into a Record struct
+  Record fromBytes(std::vector<uint8_t> bytes) {
+    if (bytes.size() < 4) {
+      // There are at least 4 required octets (field)
+      throw NDEFException("Invalid number of octets, must have at least 4");
+    }
+
+    // Create deque to allow pop_front
+    std::deque<uint8_t> vals(bytes, bytes.size());
+
+    // Read first byte into flags and TNF bits - first two bytes are sure to exist due to size check at start
+    uint8_t header = RecordHeader::fromByte(bytes);
+    uint8_t type_length = value.pop_front().unwrap();
+
+
+    // Successfully built Record object from uint8_t array
+    return Record { };
   }
 }

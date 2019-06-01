@@ -7,6 +7,19 @@
 #include "recordHeader.hpp"
 
 namespace ndef {
+  /// NDEF Record creation exception
+  class NDEFException : public std::exception {
+  public:
+    NDEFException(std::string exMsg) : msg(exMsg) { }
+    ~NDEFException() throw() { }
+    virtual const char* what() const throw() {
+      return this->msg.c_str();
+    }
+
+  private:
+    std::string msg;
+  };
+
   /// NDEF Record struct
   struct Record {
     /// NDEF Record header object
@@ -44,8 +57,17 @@ namespace ndef {
     std::vector<uint8_t> payload;
   };
 
-  /// \param bytes array of 
+  /// \param bytes array of bytes (uint8_t) that will be used to attempt to create a Record object
+  /// \return Record object created from bytes
   Record fromBytes(uint8_t bytes[]);
+
+  /// \param bytes vector of bytes (uint8_t) that will be used to attempt to create a Record object
+  /// \return Record object created from bytes
+  Record fromBytes(std::vector<uint8_t> bytes);
+
+  /// \param bytes array of bytes (uint8_t) that will be used to attempt to create a Record object
+  /// \return Record object created from bytes
+  Record fromBytes(std::vector<uint8_t> bytes);
 }
 
 #endif // NDEF_H
