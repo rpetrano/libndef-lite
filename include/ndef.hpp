@@ -7,19 +7,6 @@
 #include "recordHeader.hpp"
 
 namespace ndef {
-  /// NDEF Record creation exception
-  class NDEFException : public std::exception {
-  public:
-    NDEFException(std::string exMsg) : msg(exMsg) { }
-    ~NDEFException() throw() { }
-    virtual const char* what() const throw() {
-      return this->msg.c_str();
-    }
-
-  private:
-    std::string msg;
-  };
-
   /// NDEF Record struct
   struct Record {
     /// NDEF Record header object

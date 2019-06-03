@@ -57,45 +57,125 @@
  * \bug No known bugs
  */
 
-#include <deque>
+// Uncomment before building release version to disable asserts
+// #define NDEBUG
 
+#include <cassert>
+#include <deque>
+#include <iostream>
+
+#include "exceptions.hpp"
 #include "ndef.hpp"
 #include "span.hpp"
+#include "util.hpp"
 
 namespace ndef {
-  /// Wrapper around fromByte(std::vector<uint8_t>) that converts the array to a vector
+  using namespace std;
+  using namespace helpers;
+
+  /// Wrapper around fromByte(vector<uint8_t>) that converts the array to a vector
   Record fromBytes(uint8_t bytes[], uint64_t size) {
     // Create vector from byte array
-    std::vector<uint8_t> bytesVec(bytes, bytes + size);
+    vector<uint8_t> bytesVec(bytes, bytes + size);
 
     return fromBytes(bytesVec);
   }
 
-  /// Wrapper around fromByte(std::vector<uint8_t>) that converts the span array to a vector
+  /// Wrapper around fromByte(vector<uint8_t>) that converts the span array to a vector
   Record fromBytes(span<uint8_t> bytes) {
     // Create vector from byte array
     auto bytesPtr = bytes.data();
-    std::vector<uint8_t> bytesVec(bytesPtr, bytesPtr + bytes.size());
+    vector<uint8_t> bytesVec(bytesPtr, bytesPtr + bytes.size());
 
     return fromBytes(bytesVec);
   }
 
   /// Allows us to convert from the raw bytes from the NFC tag into a Record struct
-  Record fromBytes(std::vector<uint8_t> bytes) {
+  Record fromBytes(vector<uint8_t> bytes) {
     if (bytes.size() < 4) {
       // There are at least 4 required octets (field)
       throw NDEFException("Invalid number of octets, must have at least 4");
     }
 
     // Create deque to allow pop_front
-    std::deque<uint8_t> vals(bytes, bytes.size());
+    deque<uint8_t> vals(
+      make_move_iterator(bytes.begin()),
+      make_move_iterator(bytes.end())
+    );
+
+    if (vals.front() == 0xd1) { cout << "foo" << endl; }
 
     // Read first byte into flags and TNF bits - first two bytes are sure to exist due to size check at start
-    uint8_t header = RecordHeader::fromByte(bytes);
-    uint8_t type_length = value.pop_front().unwrap();
+    auto header = RecordHeader::fromByte(popFrontByte(vals));
+    uint8_t typeLength = popFrontByte(vals);
+    
+    uint32_t payloadLength;
+    if (header.sr) {
+      payloadLength = popFrontByte(vals);
+    } else {
+      assertHasValues(vals, 4, "payload length");
 
+      // Create uint32 from next four bytes
+      uint8_t payloadLenBytes[4] = {
+        popFrontByte(vals), popFrontByte(vals), popFrontByte(vals), popFrontByte(vals)
+      };
+      payloadLength = uint32FromBEBytes(payloadLenBytes);
+    }
+
+    uint8_t idLength = 0;
+    if (header.il) {
+      assertHasValue(vals, "ID length");
+      idLength = popFrontByte(vals);
+    }
+
+    // Confirm there are enough bytes to complete type field then populate type characters from bytes
+    assertHasValues(vals, typeLength, "type length");
+    vector<uint8_t> typeBytes(vals.begin(), vals.begin() + typeLength);
+
+    // Remove collected bytes from array
+    vals.erase(vals.begin(), vals.begin() + typeLength);
+    
+    // Create the type field from the bytes, converting them into ASCII characters after validating them
+    string typeField;
+    for (auto chr : vals) {
+      if (chr < 31 || chr == 127) {
+        // Invalid character, no ASCII characters [0-31] or 127
+        throw NDEFException("Invalid character code " + to_string(chr) + " found in type field");
+      }
+      
+      // Append valid character to type string
+      typeField += chr;
+    }
+
+    string idField;
+
+    // Only attempt to extract ID field if the length is > 0
+    if (idLength > 0) {
+        // Check if there are enough bytes to pull out id field
+        assertHasValues(vals, idLength, "ID");
+
+        // Checked that the bytes we require are available, now collect them
+        auto idBytes = vector<uint8_t>(vals.begin(), vals.begin() + idLength);
+
+        // Create string from UTF-8 bytes
+        for (auto chr : idBytes) {
+          idField += chr;
+        }
+    }
+
+    // Collect remaining data as payload after validating length
+    assertHasValues(vals, payloadLength, "payload");
+    auto payload = vector<uint8_t>(vals.begin(), vals.begin() + payloadLength);
 
     // Successfully built Record object from uint8_t array
-    return Record { };
+    return Record { 
+      header: header,
+      typeLength: typeLength,
+      payloadLength: payloadLength,
+      idLength: idLength,
+      recordType: typeField,
+      idField: idField,
+      payload: payload
+    };
   }
 }
