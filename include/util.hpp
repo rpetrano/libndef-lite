@@ -5,12 +5,12 @@
 #include <deque>
 #include <vector>
 
-namespace helpers {
+namespace util {
   /// Helper function to pop front item from deque and return it
   /// \note Assumes there is a value in the queue to actually pop, so length checks must be done ahead of time
   /// \param bytes queue of bytes to pop front item from
   /// \return uint8 of first item in queue
-  uint8_t popFrontByte(std::deque<uint8_t> bytes) {
+  uint8_t popFrontByte(std::deque<uint8_t> &bytes) {
     // Get front byte value and then remove it from queue
     auto byte = bytes.front();
     bytes.pop_front();
@@ -36,7 +36,9 @@ namespace helpers {
   template<typename T>
   void assertHasValues(std::deque<T> queue, size_t n, std::string item) {
   if (queue.size() < n) {
-    throw NDEFException("Too few elements in queue for " + item + " field: require " + n + " have " + queue.size());
+    throw NDEFException(
+      "Too few elements in queue for " + item + " field: require " + std::to_string(n) + " have " + queue.size()
+    );
   }
 
   // Number of elements >= n, no exception tossing today boys

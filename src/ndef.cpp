@@ -57,9 +57,6 @@
  * \bug No known bugs
  */
 
-// Uncomment before building release version to disable asserts
-// #define NDEBUG
-
 #include <cassert>
 #include <deque>
 #include <iostream>
@@ -71,7 +68,7 @@
 
 namespace ndef {
   using namespace std;
-  using namespace helpers;
+  using namespace util;
 
   /// Wrapper around fromByte(vector<uint8_t>) that converts the array to a vector
   Record fromBytes(uint8_t bytes[], uint64_t size) {

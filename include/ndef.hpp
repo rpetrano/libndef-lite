@@ -51,10 +51,6 @@ namespace ndef {
   /// \param bytes vector of bytes (uint8_t) that will be used to attempt to create a Record object
   /// \return Record object created from bytes
   Record fromBytes(std::vector<uint8_t> bytes);
-
-  /// \param bytes array of bytes (uint8_t) that will be used to attempt to create a Record object
-  /// \return Record object created from bytes
-  Record fromBytes(std::vector<uint8_t> bytes);
 }
 
 #endif // NDEF_H
