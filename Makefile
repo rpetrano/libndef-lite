@@ -109,10 +109,10 @@ $(TEST_OBJ) : $(OBJ_DIR)/%.o : $(TST_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@ $(LIB)
 	@echo "[TEST] Compiled "$<" successfully!"
 
-$(TEST) : $(TEST_OBJ)
+$(TEST) : $(TEST_OBJ) $(DBG_OBJ)
 	@mkdir $(BIN_DIR) ||:
-	$(CXX) $(LDFLAGS) -o $@ $(TEST_OBJ) $(LIB)
+	$(CXX) $(LDFLAGS) -o $@ $(TEST_OBJ) $(DBG_OBJ) $(LIB)
 	@echo "[TEST] Linking complete!"
 	@echo "[TEST] Binary available at" $(TEST)
 	@echo "[TEST] Executing test" $(TEST)
-	$(TEST)
+	@$(TEST)

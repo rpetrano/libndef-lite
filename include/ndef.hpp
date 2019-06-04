@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "recordHeader.hpp"
+#include "span.hpp"
 
 namespace ndef {
   /// NDEF Record struct
@@ -46,11 +47,15 @@ namespace ndef {
 
   /// \param bytes array of bytes (uint8_t) that will be used to attempt to create a Record object
   /// \return Record object created from bytes
-  Record fromBytes(uint8_t bytes[]);
+  Record recordFromBytes(uint8_t bytes[]);
 
   /// \param bytes vector of bytes (uint8_t) that will be used to attempt to create a Record object
   /// \return Record object created from bytes
-  Record fromBytes(std::vector<uint8_t> bytes);
+  Record recordFromBytes(std::vector<uint8_t> bytes);
+
+  /// \param reference to ndef::Record object that is being converted into bytes
+  /// \return span of uint8 byte values
+  span<uint8_t> recordToBytes(Record record);
 }
 
 #endif // NDEF_H

@@ -8,8 +8,8 @@
  * \bug No known bugs
  */
 
-#ifndef TYPE_NAME_FORMAT_HPP
-#define TYPE_NAME_FORMAT_HPP
+#ifndef TYPE_NAME_FORMAT_H
+#define TYPE_NAME_FORMAT_H
 
 #include <string>
 
@@ -17,7 +17,10 @@ namespace TypeNameFormat {
     /// Type Name Format Field types 
     /// 
     /// Represents 3-bit value describing record type, sets expectation for structure/content of record
-    enum Type {
+    enum class Type {
+        /// Invalid value, used for fromByte() helper
+        Invalid = 0xff,
+
         /// Record does not contain any information
         Empty = 0x00,
 
@@ -44,12 +47,14 @@ namespace TypeNameFormat {
     };
 
     /// \param value octet (byte) of data to create RecordHeader object from
-    /// \return ::Type value
-    Type fromByte(uint8_t value);
+    /// \return ::Type value matched with value, ::Type::Invalid if \t value does not match any Type Name Format field
+    constexpr inline Type fromByte(const uint8_t value) {
+        return (value <= 0x06) ? static_cast<Type>(value) : Type::Invalid;
+    }
 
     /// \param header Reference to ::Type object
     /// \return byte representation of ::Type (only bottom 3 bits will be filled)
-    uint8_t asByte(Type &field);
+    constexpr inline uint8_t asByte(const Type &field) { return static_cast<uint8_t>(field); }
 }
 
-#endif // TYPE_NAME_FORMAT_HPP
+#endif // TYPE_NAME_FORMAT_H

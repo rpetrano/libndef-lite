@@ -25,15 +25,24 @@ namespace RecordHeader {
     bool mb;
   };
 
+  bool inline operator==(const RecordHeader &lhs, const RecordHeader &rhs) {
+    return (
+      lhs.cf == rhs.cf &&
+      lhs.il == rhs.il &&
+      lhs.mb == rhs.mb &&
+      lhs.me == rhs.me &&
+      lhs.sr == rhs.sr &&
+      lhs.tnf == rhs.tnf
+    );
+  }
+
   /// \param value octet (byte) of data to create RecordHeader object from
   /// \return ::RecordHeader object
-  RecordHeader fromByte(uint8_t value);
+  RecordHeader fromByte(const uint8_t value);
 
   /// \param header Reference to ::RecordHeader object
   /// \return byte representation of ::RecordHeader
-  uint8_t headerAsByte(RecordHeader &header);
+  uint8_t headerAsByte(const RecordHeader &header);
 }
-
-
 
 #endif // RECORD_HEADER_H

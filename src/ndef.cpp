@@ -60,6 +60,7 @@
 #include <cassert>
 #include <deque>
 #include <iostream>
+#include <string>
 
 #include "exceptions.hpp"
 #include "ndef.hpp"
@@ -71,24 +72,24 @@ namespace ndef {
   using namespace util;
 
   /// Wrapper around fromByte(vector<uint8_t>) that converts the array to a vector
-  Record fromBytes(uint8_t bytes[], uint64_t size) {
+  Record recordFromBytes(uint8_t bytes[], uint64_t size) {
     // Create vector from byte array
     vector<uint8_t> bytesVec(bytes, bytes + size);
 
-    return fromBytes(bytesVec);
+    return recordFromBytes(bytesVec);
   }
 
   /// Wrapper around fromByte(vector<uint8_t>) that converts the span array to a vector
-  Record fromBytes(span<uint8_t> bytes) {
+  Record recordFromBytes(span<uint8_t> bytes) {
     // Create vector from byte array
     auto bytesPtr = bytes.data();
     vector<uint8_t> bytesVec(bytesPtr, bytesPtr + bytes.size());
 
-    return fromBytes(bytesVec);
+    return recordFromBytes(bytesVec);
   }
 
   /// Allows us to convert from the raw bytes from the NFC tag into a Record struct
-  Record fromBytes(vector<uint8_t> bytes) {
+  Record recordFromBytes(vector<uint8_t> bytes) {
     if (bytes.size() < 4) {
       // There are at least 4 required octets (field)
       throw NDEFException("Invalid number of octets, must have at least 4");
@@ -100,21 +101,19 @@ namespace ndef {
       make_move_iterator(bytes.end())
     );
 
-    if (vals.front() == 0xd1) { cout << "foo" << endl; }
-
     // Read first byte into flags and TNF bits - first two bytes are sure to exist due to size check at start
-    auto header = RecordHeader::fromByte(popFrontByte(vals));
-    uint8_t typeLength = popFrontByte(vals);
+    auto header = RecordHeader::fromByte(popFront(vals));
+    uint8_t typeLength = popFront(vals);
     
     uint32_t payloadLength;
     if (header.sr) {
-      payloadLength = popFrontByte(vals);
+      payloadLength = popFront(vals);
     } else {
       assertHasValues(vals, 4, "payload length");
 
       // Create uint32 from next four bytes
-      uint8_t payloadLenBytes[4] = {
-        popFrontByte(vals), popFrontByte(vals), popFrontByte(vals), popFrontByte(vals)
+      uint8_t payloadLenBytes[4] {
+        popFront(vals), popFront(vals), popFront(vals), popFront(vals)
       };
       payloadLength = uint32FromBEBytes(payloadLenBytes);
     }
@@ -122,15 +121,12 @@ namespace ndef {
     uint8_t idLength = 0;
     if (header.il) {
       assertHasValue(vals, "ID length");
-      idLength = popFrontByte(vals);
+      idLength = popFront(vals);
     }
 
     // Confirm there are enough bytes to complete type field then populate type characters from bytes
     assertHasValues(vals, typeLength, "type length");
-    vector<uint8_t> typeBytes(vals.begin(), vals.begin() + typeLength);
-
-    // Remove collected bytes from array
-    vals.erase(vals.begin(), vals.begin() + typeLength);
+    vector<uint8_t> typeBytes = drainDeque(vals, typeLength);
     
     // Create the type field from the bytes, converting them into ASCII characters after validating them
     string typeField;
@@ -152,7 +148,7 @@ namespace ndef {
         assertHasValues(vals, idLength, "ID");
 
         // Checked that the bytes we require are available, now collect them
-        auto idBytes = vector<uint8_t>(vals.begin(), vals.begin() + idLength);
+        auto idBytes = drainDeque(vals, typeLength);
 
         // Create string from UTF-8 bytes
         for (auto chr : idBytes) {
@@ -162,17 +158,73 @@ namespace ndef {
 
     // Collect remaining data as payload after validating length
     assertHasValues(vals, payloadLength, "payload");
-    auto payload = vector<uint8_t>(vals.begin(), vals.begin() + payloadLength);
+    auto payload = drainDeque(vals, typeLength);
 
     // Successfully built Record object from uint8_t array
     return Record { 
-      header: header,
-      typeLength: typeLength,
-      payloadLength: payloadLength,
-      idLength: idLength,
-      recordType: typeField,
-      idField: idField,
-      payload: payload
+      .header = header,
+      .typeLength = typeLength,
+      .payloadLength = payloadLength,
+      .idLength = idLength,
+      .recordType = typeField,
+      .idField = idField,
+      .payload = payload
     };
+  }
+
+  /// Creates a byte from the Record object passed
+  span<uint8_t> recordToBytes(const Record &record) {
+    // Vector to create record byte array from
+    vector<uint8_t> bytes;
+
+    // Add Record Header byte
+    bytes.push_back(RecordHeader::headerAsByte(record.header));
+    
+    // Add type length field
+    bytes.push_back(record.typeLength);
+
+    // Add payload length, dependant on the Short Record flag
+    uint8_t payloadLen[4] = {
+      static_cast<uint8_t>(record.payloadLength << 24),
+      static_cast<uint8_t>(record.payloadLength << 16),
+      static_cast<uint8_t>(record.payloadLength << 8),
+      static_cast<uint8_t>(record.payloadLength << 0),
+    };
+    if (record.header.sr) {
+      bytes.push_back(payloadLen[3]);
+    } else {
+      // Not a short record, append all 4 bytes in big endian order
+      bytes.insert(bytes.end(), { payloadLen[0], payloadLen[1], payloadLen[2], payloadLen[3] });
+    }
+
+    // Add ID length if applicable
+    if (record.header.il && record.idField.size() > 0) {
+      bytes.insert(bytes.end(), record.idField.begin(), record.idField.end());
+    }
+
+    // Add type field
+    assert(record.recordType.length() == record.typeLength);
+    for (auto byte : record.recordType) {
+        // Validate each character is valid ASCII
+        if (byte <= 31 || byte >= 127) {
+          throw NDEFException("Invalid type field character with code " + to_string(byte));
+        }
+
+        // Valid ASCII, add it to the output vector
+        bytes.emplace_back(static_cast<uint8_t>(byte));
+    }
+
+    // Add ID field if present
+    if (record.idLength > 0) {
+      assert(record.idField.length() == record.idLength);
+      bytes.insert(bytes.end(), record.idField.begin(), record.idField.end());
+    }
+
+    // Add payload bytes
+    assert(record.payload.size() == record.payloadLength);
+    bytes.insert(bytes.end(), record.payload.begin(), record.payload.end());
+
+    // Return span pointing to location of vector in memory with number of bytes in vector
+    return span<uint8_t> { &bytes[0], bytes.size() };
   }
 }

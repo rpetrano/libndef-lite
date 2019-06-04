@@ -3,20 +3,20 @@
 
 namespace RecordHeader {
   /// Create a new RecordHeader object from an byte of data
-  RecordHeader fromByte(uint8_t value) {
+  RecordHeader fromByte(const uint8_t value) {
     return RecordHeader {
-      mb: (value & 0x80) != 0,
-      me: (value & 0x40) != 0,
-      cf: (value & 0x20) != 0,
-      sr: (value & 0x10) != 0,
-      il: (value & 0x08) != 0,
+      .mb = (value & 0x80) != 0,
+      .me = (value & 0x40) != 0,
+      .cf = (value & 0x20) != 0,
+      .sr = (value & 0x10) != 0,
+      .il = (value & 0x08) != 0,
       // Take last 3 bits and retrieve matching TypeName
-      tnf: TypeNameFormat::fromByte(value & 0x07)
+      .tnf = TypeNameFormat::fromByte(static_cast<uint8_t>(value & 0x07))
     };
   }
 
   /// Creates a byte representation of the RecordHeader object passed
-  uint8_t headerAsByte(RecordHeader &header) {
+  uint8_t headerAsByte(const RecordHeader &header) {
     uint8_t byte = 0x00;
 
     if (header.mb) {

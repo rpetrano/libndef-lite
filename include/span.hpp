@@ -14,13 +14,13 @@ template<typename ElementType>
     /// \param size Size of the new array to create
     span(uint64_t size) {
       this->size = size;
-      this->data = std::shared_ptr<ElementType[]>(new ElementType[size]);
+      this->elements = std::shared_ptr<ElementType[]>(new ElementType[size]);
     }
 
-    /// \param ptr Pointer to start of data aray
+    /// \param ptr Pointer to start of data array
     /// \param size Size of the data array
     span(ElementType *ptr, uint64_t size) 
-      : data(ptr), size(size) { }
+      : elements(ptr), numElements(size) { }
     ~span() = default;
     
     // Accessors
@@ -32,7 +32,7 @@ template<typename ElementType>
 
     /// Provides access to the data array via pointer
     /// \return std::unique_ptr to start of array
-    ElementType* data() { return this->data.get(); }
+    ElementType* data() { return this->elements.get(); }
 
     // Operators
 
@@ -40,31 +40,31 @@ template<typename ElementType>
     /// \param idx Index within data array to attempt to retrieve
     /// \throws std::out_of_range if idx is an invalid index (>= size)
     /// \return ElementType reference at index
-    constexpr ElementType& operator[](uint64_t idx) { return at(idx); }
+    constexpr ElementType& operator[](const uint64_t idx) const { return at(idx); }
 
     // Observers
 
     /// Access the size of the array
     /// \return uint64_t of size of array
-    uint64_t size() const { return this.size; }
+    uint64_t size() const { return this->numElements; }
 
     /// Helper function to check if the span is empty
     /// \return bool indicating whether the array is empty
-    bool empty() const { return this.size == 0; }
+    bool empty() const { return this->numElements == 0; }
 
   private:
-    std::shared_ptr<ElementType[]> data;
-    uint64_t size;
+    std::shared_ptr<ElementType[]> elements;
+    uint64_t numElements;
   };
 
 /// Implementation of span::at
 template<typename T>
   T& span<T>::at(uint64_t idx) {
-    if (idx >= this->size) {
-      throw std::out_of_range("invalid index " + idx + " for span");
+    if (idx >= this->numElements) {
+      throw std::out_of_range("invalid index " + std::to_string(idx) + " for span");
     }
 
-    return *(data + idx);
+    return *(elements + idx);
   }
 
 #endif // SPAN_H
