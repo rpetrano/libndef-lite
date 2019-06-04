@@ -127,10 +127,10 @@ namespace ndef {
     // Confirm there are enough bytes to complete type field then populate type characters from bytes
     assertHasValues(vals, typeLength, "type length");
     vector<uint8_t> typeBytes = drainDeque(vals, typeLength);
-    
+
     // Create the type field from the bytes, converting them into ASCII characters after validating them
     string typeField;
-    for (auto chr : vals) {
+    for (auto chr : typeBytes) {
       if (chr < 31 || chr == 127) {
         // Invalid character, no ASCII characters [0-31] or 127
         throw NDEFException("Invalid character code " + to_string(chr) + " found in type field");
@@ -158,7 +158,7 @@ namespace ndef {
 
     // Collect remaining data as payload after validating length
     assertHasValues(vals, payloadLength, "payload");
-    auto payload = drainDeque(vals, typeLength);
+    auto payload = drainDeque(vals, payloadLength);
 
     // Successfully built Record object from uint8_t array
     return Record { 

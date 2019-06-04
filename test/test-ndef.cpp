@@ -47,7 +47,7 @@ std::vector<uint8_t> validTextRecordBytes() {
     return testBytes;
 }
 
-TEST_CASE( "Create valid NDEF Record from known valid bytes",  "[ndefFromBytesValidText]") {
+TEST_CASE( "Create valid NDEF Record from known valid bytes",  "[ndefFromBytesValidText]" ) {
   using namespace ndef;
 
   std::vector<uint8_t> testBytes = validTextRecordBytes();
@@ -63,6 +63,13 @@ TEST_CASE( "Create valid NDEF Record from known valid bytes",  "[ndefFromBytesVa
 
   Record record = recordFromBytes(testBytes);
 
+  CHECK( record.idLength == 0 );
+  CHECK( record.idField == "" );
+  CHECK( record.header == expectedHeader );
+  CHECK( record.payloadLength == 19 );
+  CHECK( record.typeLength == 1 );
+  CHECK( record.recordType == "T" );
+
   // Get encoding and country code from payload
   std::string textPayload;
   REQUIRE( ((record.payload[0] >> 7) & 0x01) != 0 );
@@ -74,14 +81,11 @@ TEST_CASE( "Create valid NDEF Record from known valid bytes",  "[ndefFromBytesVa
   // Ignore UTF-x/RFU/IANA code length byte and then ISO/IANA language code bytes
   size_t numIgnoreBytes = 1 + langCodeLen;
 
-  // Extract text payload from UTF-8 bytes
-  textPayload = std::string { record.payload.begin() + numIgnoreBytes, record.payload.end() };
+  INFO("Num ignored:" << numIgnoreBytes);
+  INFO("Payload: " << std::string(record.payload.begin(), record.payload.end()));
 
-  REQUIRE( record.idLength == 0 );
-  REQUIRE( record.idField == "" );
-  REQUIRE( record.header == expectedHeader );
-  REQUIRE( record.payloadLength == 19 );
-  REQUIRE( record.recordType == "T" );
-  REQUIRE( record.typeLength == 1 );
-  REQUIRE( textPayload == "Hello, World!" );
+  // Extract text payload from UTF-8 bytes
+  textPayload = std::string(record.payload.begin() + numIgnoreBytes, record.payload.end());
+
+  CHECK( textPayload == "Hello, World!" );
 }

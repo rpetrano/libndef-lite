@@ -11,8 +11,8 @@ DBG_DIR = dbg
 DOC_DIR = doc
 
 # Compiler flags
-# Enable all warning checks and treat warnings as errors
-CXXFLAGS += -Wall -Wextra -Werror
+# Enable all warning checks
+CXXFLAGS += -Wall -Wextra
 # Project is compiled with C++11 support
 CXXFLAGS += -std=c++11
 # Include project header files
@@ -26,10 +26,12 @@ RELEASE_FLAGS += -fsanitize=address
 RELEASE_FLAGS += -flto
 # Disable all assertions
 RELEASE_FLAGS += -DNDEBUG
+# Treat warnings as errors for release builds
+RELEASE_FLAGS += -Werror
 
 # Linker flags - all below are the same as above
-LDFLAGS  	  	+= -Wall -Wextra -Werror
-RELEASE_LDFLAGS += -fsanitize=address -flto
+LDFLAGS  	  	+= -Wall -Wextra
+RELEASE_LDFLAGS += -fsanitize=address -flto -Werror
 
 # Libraries
 LIB  :=
