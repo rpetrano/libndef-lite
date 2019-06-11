@@ -1,5 +1,6 @@
 #include "catch.hpp"
 #include "ndef.hpp"
+#include "util.hpp"
 
 std::vector<uint8_t> validTextRecordBytes() {
     // Record Header
@@ -49,8 +50,9 @@ std::vector<uint8_t> validTextRecordBytes() {
 
 TEST_CASE( "Create valid NDEF Record from known valid bytes",  "[ndefFromBytesValidText]" ) {
   using namespace ndef;
+  using namespace std;
 
-  std::vector<uint8_t> testBytes = validTextRecordBytes();
+  vector<uint8_t> testBytes = validTextRecordBytes();
 
   auto expectedHeader = RecordHeader::RecordHeader {
     .mb = true,
@@ -71,7 +73,7 @@ TEST_CASE( "Create valid NDEF Record from known valid bytes",  "[ndefFromBytesVa
   CHECK( record.recordType == "T" );
 
   // Get encoding and country code from payload
-  std::string textPayload;
+  string textPayload;
   REQUIRE( ((record.payload[0] >> 7) & 0x01) != 0 );
   
   // Decoding UTF-8
@@ -82,10 +84,31 @@ TEST_CASE( "Create valid NDEF Record from known valid bytes",  "[ndefFromBytesVa
   size_t numIgnoreBytes = 1 + langCodeLen;
 
   INFO("Num ignored:" << numIgnoreBytes);
-  INFO("Payload: " << std::string(record.payload.begin(), record.payload.end()));
+  INFO("Payload: " << string(record.payload.begin(), record.payload.end()));
 
   // Extract text payload from UTF-8 bytes
-  textPayload = std::string(record.payload.begin() + numIgnoreBytes, record.payload.end());
+  textPayload = string(record.payload.begin() + numIgnoreBytes, record.payload.end());
 
   CHECK( textPayload == "Hello, World!" );
+}
+
+TEST_CASE( "Valid NDEF Record returns valid bytes", "[bytesFromRecord]" ) {
+  using namespace ndef;
+  using namespace std;
+  using namespace util;
+
+  // Create known valid text record
+  vector<uint8_t> testBytes = validTextRecordBytes();
+  Record record = recordFromBytes(testBytes);
+
+  // Convert record to bytes
+  vector<uint8_t> bytes = recordToBytes(record);
+
+  REQUIRE( bytes.size() == testBytes.size() );
+  for (size_t i = 0; i < testBytes.size(); i++) {
+    auto byte = bytes.at(i);
+    auto testByte = testBytes.at(i);
+    INFO(i);
+    CHECK( testBytes.at(i) == bytes[i] );
+  }
 }

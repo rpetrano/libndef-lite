@@ -7,14 +7,13 @@ INC_DIR = include
 OBJ_DIR = obj
 SRC_DIR = src
 TST_DIR = test
-DBG_DIR = dbg
 DOC_DIR = doc
 
 # Compiler flags
 # Enable all warning checks
 CXXFLAGS += -Wall -Wextra
-# Project is compiled with C++11 support
-CXXFLAGS += -std=c++11
+# Project is compiled with C++14 support
+CXXFLAGS += -std=c++14
 # Include project header files
 CXXFLAGS += -I$(INC_DIR)/
 
@@ -28,10 +27,15 @@ RELEASE_FLAGS += -flto
 RELEASE_FLAGS += -DNDEBUG
 # Treat warnings as errors for release builds
 RELEASE_FLAGS += -Werror
+# Code is memory location independent
+RELEASE_FLAGS += -fPIC
+
+# Debug flag
+DEBUG_FLAG = -g
 
 # Linker flags - all below are the same as above
 LDFLAGS  	  	+= -Wall -Wextra
-RELEASE_LDFLAGS += -fsanitize=address -flto -Werror
+RELEASE_LDFLAGS += -fsanitize=address -flto -Werror -fPIC
 
 # Libraries
 LIB  :=
@@ -45,7 +49,7 @@ endif
 SRC  	 = $(wildcard $(SRC_DIR)/*.cpp)
 TEST_SRC = $(wildcard $(TST_DIR)/*.cpp)
 OBJ  	 = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
-DBG_OBJ  = $(SRC:$(SRC_DIR)/%.cpp=$(DBG_DIR)/%.o)
+DBG_OBJ  = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.dbg.o)
 TEST_OBJ = $(TEST_SRC:$(TST_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 # Executabls
@@ -53,11 +57,11 @@ EXEC = $(BIN_DIR)/$(TARGET)
 DBG  = $(BIN_DIR)/$(TARGET)_dbg
 TEST = $(BIN_DIR)/$(TARGET)_test
 
-.PHONY: all clean debug test doc
+.PHONY: all clean debug test doc runtests
 
 all : $(EXEC)
 debug : $(DBG)
-test : $(TEST)
+test : $(TEST) runtests
 clean :
 	-$(RM) -r $(OBJ) $(EXEC) $(DBG_DIR) $(BIN_DIR) $(OBJ_DIR)
 	@echo "Cleaned all binaries and object files"
@@ -93,14 +97,14 @@ $(EXEC) : $(OBJ)
 
 # --- Debug ---
 
-$(DBG_OBJ) : $(DBG_DIR)/%.o : $(SRC_DIR)/%.cpp
-	@mkdir $(DBG_DIR) ||:
-	$(CXX) $(CXXFLAGS) -c $< -o $@ $(LIB)
+$(DBG_OBJ) : $(OBJ_DIR)/%.dbg.o : $(SRC_DIR)/%.cpp
+	@mkdir $(OBJ_DIR) ||:
+	$(CXX) $(CXXFLAGS) $(DEBUG_FLAG) -c $< -o $@ $(LIB)
 	@echo "[DEBUG] Compiled "$<" successfully!"
 
 $(DBG) : $(DBG_OBJ)
 	@mkdir $(BIN_DIR) ||:
-	$(CXX) $(LDFLAGS) -o $@ $(DBG_OBJ) $(LIB)
+	$(CXX) $(LDFLAGS) $(DEBUG_FLAG) -o $@ $(DBG_OBJ) $(LIB)
 	@echo "[DEBUG] Linking complete!"
 	@echo "[DEBUG] Binary available at" $(DBG)
 
@@ -108,13 +112,15 @@ $(DBG) : $(DBG_OBJ)
 
 $(TEST_OBJ) : $(OBJ_DIR)/%.o : $(TST_DIR)/%.cpp
 	@mkdir $(OBJ_DIR) ||:
-	$(CXX) $(CXXFLAGS) -c $< -o $@ $(LIB)
+	$(CXX) $(CXXFLAGS) $(DEBUG_FLAG) -c $< -o $@ $(LIB)
 	@echo "[TEST] Compiled "$<" successfully!"
 
 $(TEST) : $(TEST_OBJ) $(DBG_OBJ)
 	@mkdir $(BIN_DIR) ||:
-	$(CXX) $(LDFLAGS) -o $@ $(TEST_OBJ) $(DBG_OBJ) $(LIB)
+	$(CXX) $(LDFLAGS) $(DEBUG_FLAG) -o $@ $(TEST_OBJ) $(DBG_OBJ) $(LIB)
 	@echo "[TEST] Linking complete!"
 	@echo "[TEST] Binary available at" $(TEST)
+
+runtests : $(TEST)
 	@echo "[TEST] Executing test" $(TEST)
 	@$(TEST)

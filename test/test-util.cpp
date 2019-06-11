@@ -97,3 +97,133 @@ TEST_CASE( "assertHasValue throws NDEFException, empty deque", "[assertHasValueT
     "Too few elements in queue for unit test field: require 1 have 0" 
   );
 }
+
+TEST_CASE( "span initializes correct number of elements", "[spanInitCorrectNumElems]" ) {
+  const auto expectedSpanSize = 4;
+  span<uint8_t> testSpan{expectedSpanSize};
+  
+  REQUIRE_FALSE( testSpan.empty() );
+  REQUIRE( testSpan.size() == expectedSpanSize );
+}
+
+TEST_CASE( "span is empty", "[spanIsEmpty]" ) {
+  const auto expectedSpanSize = 0;
+  span<uint8_t> testSpan{expectedSpanSize};
+  
+  REQUIRE( testSpan.empty() );
+  REQUIRE( testSpan.size() == expectedSpanSize );
+}
+
+TEST_CASE( "span from unique pointer", "[spanFromUnique]" ) {
+  const auto expectedSpanSize = 4;
+  auto testPtr = std::make_unique<uint8_t[]>(expectedSpanSize);
+  testPtr[0] = 42;
+  testPtr[1] = 24;
+  testPtr[2] = 21;
+  testPtr[3] = 12;
+  span<uint8_t> testSpan{move(testPtr), expectedSpanSize};
+
+  REQUIRE_FALSE( testSpan.empty() );
+  REQUIRE( testSpan.size() == 4 );
+
+  REQUIRE( testSpan.at(0) == 42 );
+  REQUIRE( testSpan.at(1) == 24 );
+  REQUIRE( testSpan.at(2) == 21 );
+  REQUIRE( testSpan.at(3) == 12 );
+  
+  REQUIRE( testSpan[0] == 42 );
+  REQUIRE( testSpan[1] == 24 );
+  REQUIRE( testSpan[2] == 21 );
+  REQUIRE( testSpan[3] == 12 );
+}
+
+TEST_CASE( "editable span from unique pointer", "[editSpanFromUnique]" ) {
+  const auto expectedSpanSize = 4;
+  auto testPtr = std::make_unique<uint8_t[]>(expectedSpanSize);
+  span<uint8_t> testSpan{move(testPtr), expectedSpanSize};
+
+  REQUIRE_FALSE( testSpan.empty() );
+  REQUIRE( testSpan.size() == 4 );
+
+  // Set values via .at()
+  testSpan.at(0) = 0;
+  testSpan.at(1) = 1;
+  testSpan.at(2) = 2;
+  testSpan.at(3) = 3;
+
+  REQUIRE( testSpan.at(0) == 0 );
+  REQUIRE( testSpan.at(1) == 1 );
+  REQUIRE( testSpan.at(2) == 2 );
+  REQUIRE( testSpan.at(3) == 3 );
+  
+  REQUIRE( testSpan[0] == 0 );
+  REQUIRE( testSpan[1] == 1 );
+  REQUIRE( testSpan[2] == 2 );
+  REQUIRE( testSpan[3] == 3 );
+
+  // Set values via subscript operator
+  testSpan[0] = 9;
+  testSpan[1] = 8;
+  testSpan[2] = 7;
+  testSpan[3] = 6;
+
+  REQUIRE( testSpan.at(0) == 9 );
+  REQUIRE( testSpan.at(1) == 8 );
+  REQUIRE( testSpan.at(2) == 7 );
+  REQUIRE( testSpan.at(3) == 6 );
+  
+  REQUIRE( testSpan[0] == 9 );
+  REQUIRE( testSpan[1] == 8 );
+  REQUIRE( testSpan[2] == 7 );
+  REQUIRE( testSpan[3] == 6 );
+}
+
+TEST_CASE( "span from temporary unique pointer", "[spanFromTempUnique]" ) {
+  const auto expectedSpanSize = 4;
+  span<uint8_t> testSpan{
+    std::make_unique<uint8_t[]>(expectedSpanSize),
+    expectedSpanSize
+  };
+
+  testSpan.at(0) = 42;
+  testSpan.at(1) = 24;
+  testSpan.at(2) = 21;
+  testSpan.at(3) = 12;
+
+  REQUIRE_FALSE( testSpan.empty() );
+  REQUIRE( testSpan.size() == 4 );
+
+  REQUIRE( testSpan.at(0) == 42 );
+  REQUIRE( testSpan.at(1) == 24 );
+  REQUIRE( testSpan.at(2) == 21 );
+  REQUIRE( testSpan.at(3) == 12 );
+  
+  REQUIRE( testSpan[0] == 42 );
+  REQUIRE( testSpan[1] == 24 );
+  REQUIRE( testSpan[2] == 21 );
+  REQUIRE( testSpan[3] == 12 );
+}
+
+TEST_CASE( "span from raw pointer", "[spanRawPointer]" ) {
+  const auto expectedSpanSize = 2;
+  uint8_t *values = new uint8_t[expectedSpanSize]{ 0, 1 };
+  span<uint8_t> testSpan{values, expectedSpanSize};
+  
+  REQUIRE_FALSE( testSpan.empty() );
+  REQUIRE( testSpan.size() == expectedSpanSize );
+
+  REQUIRE( testSpan.at(0) == 0 );
+  REQUIRE( testSpan.at(1) == 1 );
+}
+
+TEST_CASE( "span to pointer", "[spanToPointer]" ) {
+  const auto expectedSpanSize = 2;
+  uint8_t *values = new uint8_t[expectedSpanSize]{ 0, 1 };
+  span<uint8_t> testSpan{values, expectedSpanSize};
+  
+  REQUIRE_FALSE( testSpan.empty() );
+  REQUIRE( testSpan.size() == expectedSpanSize );
+
+  REQUIRE( testSpan.at(0) == 0 );
+  REQUIRE( testSpan.at(1) == 1 );
+}

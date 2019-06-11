@@ -32,7 +32,7 @@ TEST_CASE( "Short Record header", "[shortRecordHeader]" ) {
     REQUIRE( expected == recordHeader );
 }
 
-TEST_CASE( "Record Header to byte", "[headerToByte]") {
+TEST_CASE( "Record Header to byte", "[headerAsByte]") {
     auto header = RecordHeader::RecordHeader {
         .mb = true,
         .me = true,
@@ -42,5 +42,6 @@ TEST_CASE( "Record Header to byte", "[headerToByte]") {
         .tnf = TypeNameFormat::Type::WellKnown,
     };
     uint8_t byte = RecordHeader::headerAsByte(header);
+    
     REQUIRE( byte == 0b11010001 );
 }

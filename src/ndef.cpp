@@ -16,42 +16,43 @@
  * \section contents_structure Message Contents Structure
  * The following fields are listed in the order they must appear in the NDEF record
  * 
- * - [Message Begin](RecordHeader::mb) - 1 bit (bit 7)
+ * - \ref RecordHeader::RecordHeader::mb "Message Begin" - 1 bit (bit 7)
  *     - Required
  *     - Indicates if this is the start of an NDEF message
- * - [Message End](struct.RecordHeader.html#structfield.me) - 1 bit (bit 6)
+ * - \ref RecordHeader::RecordHeader::me "Message End" - 1 bit (bit 6)
  *     - Required
  *     - Indicates if this is the last record in the message
- * - [Chunk Flag](struct.RecordHeader.html#structfield.cf) - 1 bit (bit 5)
+ *     - If both \t mb and \t me are set in a header then the record is the only record in the message
+ * - \ref RecordHeader::RecordHeader::cf "Chunk Flag" - 1 bit (bit 5)
  *     - Required
  *     - Indicates if this the first record chunk or in the middle
- * - [Short Record Flag](struct.RecordHeader.html#structfield.sr) - 1 bit (bit 4)
+ * - \ref RecordHeader::RecordHeader::sr "Short Record Flag" - 1 bit (bit 4)
  *     - Required
  *     - Indicates if PAYLOAD LENGTH field is short (1 byte, 0-255) or longer
- * - [IL Flag](struct.RecordHeader.html#structfield.il) - 1 bit (bit 3)
+ * - \ref RecordHeader::RecordHeader::il "ID Length Flag" - 1 bit (bit 3)
  *     - Required
  *     - Indicates whether ID Length Field is present
- * - [Type Name Format](enum.TypeNameFormat.html) - 3 bits (bits 2-0)
+ * - \ref TypeNameFormat::Type "Type Name Format" - 3 bits (bits 2-0)
  *     - Required
  *     - Can be 0
- * - [Type Length](struct.Record.html#structfield.type_length) - 1 byte
+ * - \ref ndef::Record::typeLength "Type Length" - 1 byte
  *     - Will always be 0 for certain values of TNF field
  *     - Specifies length, in octets, of the ID field
- * - [Payload length](struct.Record.html#structfield.payload_length) - 1 byte or 4 bytes
+ * - \ref ndef::Record::payloadLength "Payload length" - 1 byte or 4 bytes
  *     - Required
  *     - Can be 0
  *     - If `SR` flag is set in the record header then this value will be 1 byte, otherwise it will be a 4 byte value
- * - [ID Length](struct.Record.html#structfield.id_length) - 1 byte
- *     - Can be 0 (will result in omission of [ID field](struct.Record.html#structfield.id_field))
+ * - \ref ndef::Record::idLength "ID Length" - 1 byte
+ *     - Can be 0 (will result in omission of \ref ndef::Record::idField) "ID field"
  *     - If `IL` flag is set in the record header then this value will be 1 byte in length, otherwise it will be
  *         omitted
- * - [Type](struct.Record.html#structfield.record_type) - length in bytes defined by Type Length field
+ * - \ref ndef::Record::recordType "Type" - length in bytes defined by Type Length field
  *     - Identifier that describes the contents of the payload
  *     - Formed from characters in US ASCII set, characters in range [0-31] and 127 are invalid and SHALL NOT be used
- * - [ID](struct.Record.html#structfield.id_field) - length in bytes defined by ID Length field
+ * - \ref ndef::Record::idField "ID" - length in bytes defined by ID Length field
  *     - Relative or absolute URI identifier
- *     - Omitted if [ID length](struct.Record.html#structfield.id_length) is 0
- * - [Payload](struct.Record.html#structfield.payload) - length in bytes defined by Payload Length field
+ *     - Omitted if \ref ndef::Record::idLength "ID length" is 0
+ * - \ref ndef::Record::payload "Payload" - length in bytes defined by Payload Length field
  *     - Data in this field is opaque to the library and will be merely passed along
  * 
  * \bug No known bugs
@@ -64,7 +65,6 @@
 
 #include "exceptions.hpp"
 #include "ndef.hpp"
-#include "span.hpp"
 #include "util.hpp"
 
 namespace ndef {
@@ -80,13 +80,13 @@ namespace ndef {
   }
 
   /// Wrapper around fromByte(vector<uint8_t>) that converts the span array to a vector
-  Record recordFromBytes(span<uint8_t> bytes) {
-    // Create vector from byte array
-    auto bytesPtr = bytes.data();
-    vector<uint8_t> bytesVec(bytesPtr, bytesPtr + bytes.size());
+  // Record recordFromBytes(span<uint8_t> bytes) {
+  //   // Create vector from byte array
+  //   auto bytesPtr = bytes.data();
+  //   vector<uint8_t> bytesVec(bytesPtr, bytesPtr + bytes.size());
 
-    return recordFromBytes(bytesVec);
-  }
+  //   return recordFromBytes(bytesVec);
+  // }
 
   /// Allows us to convert from the raw bytes from the NFC tag into a Record struct
   Record recordFromBytes(vector<uint8_t> bytes) {
@@ -173,7 +173,7 @@ namespace ndef {
   }
 
   /// Creates a byte from the Record object passed
-  span<uint8_t> recordToBytes(const Record &record) {
+  vector<uint8_t> recordToBytes(const Record &record) {
     // Vector to create record byte array from
     vector<uint8_t> bytes;
 
@@ -185,10 +185,10 @@ namespace ndef {
 
     // Add payload length, dependant on the Short Record flag
     uint8_t payloadLen[4] = {
-      static_cast<uint8_t>(record.payloadLength << 24),
-      static_cast<uint8_t>(record.payloadLength << 16),
-      static_cast<uint8_t>(record.payloadLength << 8),
-      static_cast<uint8_t>(record.payloadLength << 0),
+      static_cast<uint8_t>(record.payloadLength >> 24),
+      static_cast<uint8_t>(record.payloadLength >> 16),
+      static_cast<uint8_t>(record.payloadLength >> 8),
+      static_cast<uint8_t>(record.payloadLength >> 0),
     };
     if (record.header.sr) {
       bytes.push_back(payloadLen[3]);
@@ -225,6 +225,6 @@ namespace ndef {
     bytes.insert(bytes.end(), record.payload.begin(), record.payload.end());
 
     // Return span pointing to location of vector in memory with number of bytes in vector
-    return span<uint8_t> { &bytes[0], bytes.size() };
+    return bytes;
   }
 }
