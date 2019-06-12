@@ -23,15 +23,13 @@ RELEASE_FLAGS += -O3
 RELEASE_FLAGS += -fsanitize=address
 # Enable Link Time Optimization
 RELEASE_FLAGS += -flto
-# Disable all assertions
-RELEASE_FLAGS += -DNDEBUG
 # Treat warnings as errors for release builds
 RELEASE_FLAGS += -Werror
 # Code is memory location independent
 RELEASE_FLAGS += -fPIC
 
 # Debug flag
-DEBUG_FLAG = -g
+DEBUG_FLAG = -o0 -ggdb3
 
 # Linker flags - all below are the same as above
 LDFLAGS  	  	+= -Wall -Wextra
@@ -63,7 +61,7 @@ all : $(EXEC)
 debug : $(DBG)
 test : $(TEST) runtests
 clean :
-	-$(RM) -r $(OBJ) $(EXEC) $(DBG_DIR) $(BIN_DIR) $(OBJ_DIR)
+	-$(RM) -r $(OBJ) $(DBG_OBJ) $(EXEC) $(DBG_DIR) $(BIN_DIR) $(OBJ_DIR)
 	@echo "Cleaned all binaries and object files"
 
 # --- Documentation ---

@@ -8,13 +8,11 @@
 class NDEFException : public std::exception {
 public:
   // Constructor/Destructor
-  NDEFException(std::string exMsg) : msg(exMsg) { }
-  ~NDEFException() throw() { }
+  NDEFException(std::string exMsg) : msg(exMsg) {}
+  ~NDEFException() throw() {}
 
   // Exception implementation
-  virtual const char* what() const throw() {
-    return this->msg.c_str();
-  }
+  virtual const char* what() const throw() { return this->msg.c_str(); }
 
 private:
   std::string msg;
