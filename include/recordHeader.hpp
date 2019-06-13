@@ -3,7 +3,6 @@
 
 #include "recordType.hpp"
 
-namespace NDEFRecordHeader {
 /// NDEF Record type binary flags in header
 enum class RecordFlag {
   IL = 0x08, // ID_LENGTH is present.
@@ -14,9 +13,10 @@ enum class RecordFlag {
 };
 
 /// NDEF Record Header
-struct RecordHeader {
+struct NDEFRecordHeader
+{
   /// Type Name Format - identifies type of content the record contains
-  NDEFRecordType::Type tnf;
+  NDEFRecordType::TypeID tnf;
 
   /// ID Length Flag - Indicates whether ID Length Field is present
   bool il;
@@ -32,21 +32,30 @@ struct RecordHeader {
 
   /// Message Begin - Indicates if this is the start of an NDEF message
   bool mb;
+
+  // Methods
+
+  /// \param value octet (byte) of data to create NDEFRecordHeader object from
+  /// \return ::NDEFRecordHeader object
+  static NDEFRecordHeader fromByte(const uint8_t value);
+
+  /// \param header Reference to ::NDEFRecordHeader object
+  /// \return byte representation of ::NDEFRecordHeader
+  uint8_t asByte();
+
+  bool inline constexpr operator==(const NDEFRecordHeader& rhs) const
+  {
+    // clang-format off
+    return (
+      this->cf == rhs.cf && 
+      this->il == rhs.il &&
+      this->mb == rhs.mb &&
+      this->me == rhs.me &&
+      this->sr == rhs.sr &&
+      this->tnf == rhs.tnf
+    );
+    // clang-format on
+  }
 };
-
-bool inline constexpr operator==(const RecordHeader& lhs, const RecordHeader& rhs)
-{
-  return (lhs.cf == rhs.cf && lhs.il == rhs.il && lhs.mb == rhs.mb && lhs.me == rhs.me && lhs.sr == rhs.sr &&
-          lhs.tnf == rhs.tnf);
-}
-
-/// \param value octet (byte) of data to create RecordHeader object from
-/// \return ::RecordHeader object
-RecordHeader fromByte(const uint8_t value);
-
-/// \param header Reference to ::RecordHeader object
-/// \return byte representation of ::RecordHeader
-uint8_t asByte(const RecordHeader& header);
-} // namespace NDEFRecordHeader
 
 #endif // RECORD_HEADER_H

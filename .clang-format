@@ -18,3 +18,5 @@ BraceWrapping:
     AfterStruct: true
 
 AlwaysBreakTemplateDeclarations: Yes
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+BreakConstructorInitializers: BeforeColon

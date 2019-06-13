@@ -1,5 +1,6 @@
 #include "catch.hpp"
 #include "ndefRecord.hpp"
+#include "recordHeader.hpp"
 #include "util.hpp"
 
 std::vector<uint8_t> validTextRecordBytes()
@@ -51,40 +52,31 @@ TEST_CASE("Create valid NDEF Record from known valid bytes", "[ndefFromBytesVali
 
   vector<uint8_t> testBytes = validTextRecordBytes();
 
-  auto expectedHeader = NDEFRecordHeader::RecordHeader{
-    .mb = true,
-    .me = true,
-    .cf = false,
-    .sr = true,
-    .il = false,
-    .tnf = NDEFRecordType::Type::WellKnown,
-  };
-
   NDEFRecord record = NDEFRecord::fromBytes(testBytes);
 
   CHECK(record.id().length() == 0);
   CHECK(record.id() == "");
-  CHECK(record == expectedHeader);
-  CHECK(record.payloadLength == 19);
-  CHECK(record.typeLength == 1);
-  CHECK(record.recordType == "T");
+  CHECK(record.isShort());
+  CHECK_FALSE(record.isChunked());
+  CHECK(record.payloadLength() == 19);
+  CHECK(record.type().name().length() == 1);
+  CHECK(record.type().name() == "T");
 
   // Get encoding and country code from payload
   string textPayload;
-  REQUIRE(((record.payload[0] >> 7) & 0x01) != 0);
+  REQUIRE(((record.payload()[0] >> 7) & 0x01) != 0);
 
   // Decoding UTF-8
   // Ignore language code length and language code, last 5 bits are the ISO/IANA language code bytes length
-  uint8_t langCodeLen = record.payload[0] & 0x1f;
+  uint8_t langCodeLen = record.payload()[0] & 0x1f;
 
   // Ignore UTF-x/RFU/IANA code length byte and then ISO/IANA language code bytes
   size_t numIgnoreBytes = 1 + langCodeLen;
 
-  INFO("Num ignored:" << numIgnoreBytes);
-  INFO("Payload: " << string(record.payload.begin(), record.payload.end()));
-
   // Extract text payload from UTF-8 bytes
-  textPayload = string(record.payload.begin() + numIgnoreBytes, record.payload.end());
+  textPayload = string{ record.payload().data() + numIgnoreBytes, record.payloadLength() - numIgnoreBytes };
+  INFO("Num ignored:" << numIgnoreBytes);
+  INFO("Payload: " << textPayload);
 
   CHECK(textPayload == "Hello, World!");
 }
@@ -103,8 +95,6 @@ TEST_CASE("Valid NDEF Record returns valid bytes", "[bytesFromRecord]")
 
   REQUIRE(bytes.size() == testBytes.size());
   for (size_t i = 0; i < testBytes.size(); i++) {
-    auto byte = bytes.at(i);
-    auto testByte = testBytes.at(i);
     CHECK(testBytes.at(i) == bytes[i]);
   }
 }
