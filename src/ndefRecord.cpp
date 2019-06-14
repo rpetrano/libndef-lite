@@ -206,9 +206,9 @@ vector<uint8_t> NDEFRecord::asBytes() const
                            .il = (this->id().length() > 0),
                            .sr = this->isShort(),
                            .cf = this->isChunked(),
-                           // Leave message end/message begin to be handled by NDEFMessage
-                           .me = false,
-                           .mb = false };
+                           // Assume this record is only record, set message end/message begin. NDEFMessage may change
+                           .me = true,
+                           .mb = true };
 
   // Add Record Header byte
   bytes.push_back(header.asByte());

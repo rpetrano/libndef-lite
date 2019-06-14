@@ -35,7 +35,7 @@ public:
   static NDEFRecord fromBytes(std::vector<uint8_t> bytes, size_t offset = 0);
 
   // Accessors/Mutators
-  void constexpr setId(const std::string& id) { this->idField = id; }
+  void setId(const std::string& newId) { this->idField = newId; }
   std::string id() const { return this->idField; }
 
   void constexpr setType(const NDEFRecordType& type) { this->recordType = type; }

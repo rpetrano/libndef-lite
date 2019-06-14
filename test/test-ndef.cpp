@@ -74,7 +74,9 @@ TEST_CASE("Create valid NDEF Record from known valid bytes", "[ndefFromBytesVali
   size_t numIgnoreBytes = 1 + langCodeLen;
 
   // Extract text payload from UTF-8 bytes
-  textPayload = string{ record.payload().data() + numIgnoreBytes, record.payloadLength() - numIgnoreBytes };
+  auto payloadStart = record.payload().begin();
+  advance(payloadStart, numIgnoreBytes);
+  textPayload = string{ payloadStart, record.payload().end() };
   INFO("Num ignored:" << numIgnoreBytes);
   INFO("Payload: " << textPayload);
 
