@@ -59,8 +59,10 @@
  */
 
 #include <cassert>
+#include <codecvt>
 #include <deque>
 #include <iostream>
+#include <locale>
 #include <string>
 
 #include "exceptions.hpp"
@@ -286,5 +288,23 @@ void NDEFRecord::validate()
 {
   if (payloadData.size() > 0 && (recordType.id() == NDEFRecordType::TypeID::Empty)) {
     recordType = NDEFRecordType(NDEFRecordType::TypeID::Unknown);
+  }
+}
+
+NDEFRecord createTextRecord(const std::string& text, const std::string& locale, RecordTextCodec codec) {}
+std::string textLocale(const std::vector<uint8_t>& payload)
+{
+  // Get the length of the locale string from the payload
+  const uint localeLength = payload.at(0) & 0x1f;
+  return string{ payload.begin() + 1, payload.begin() + 1 + localeLength };
+}
+std::string textFromTextPayload(const std::vector<uint8_t>& payload)
+{
+  const uint detailByte = payload.at(0);
+  const uint localeLength = detailByte & 0x1f;
+  const std::string recordText{ payload.begin() + 1 + localeLength, payload.end() };
+
+  if (detailByte & static_cast<uint8_t>(RecordTextCodec::UTF16) {
+    
   }
 }

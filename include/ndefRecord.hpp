@@ -56,7 +56,13 @@ public:
   bool constexpr isEmpty() const { return (this->recordType.id() == NDEFRecordType::TypeID::Empty); }
   bool constexpr isValid() const { return (this->recordType.id() != NDEFRecordType::TypeID::Invalid); }
 
-private:
+  // Record creation helpers
+  
+  // Text records
+  static NDEFRecord createTextRecord(const std::string &text, const std::string &locale, RecordTextCodec codec=RecordTextCodec::UTF8);
+  static std::string textLocale(const std::vector<uint8_t> &payload);
+  static std::string textFromTextPayload(const std::vector<uint8_t>& payload);
+
   // NDEF Record Fields
 
   /// Specifies record type. Must follow the structure, encoding, and format implied by the value of the TNF field. If

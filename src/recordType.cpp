@@ -52,3 +52,25 @@ NDEFRecordType NDEFRecordType::fromBytes(std::vector<uint8_t> data, size_t offse
 
   return NDEFRecordType{ static_cast<NDEFRecordType::TypeID>(tnf), typeName };
 }
+
+NDEFRecordType NDEFRecordType::textRecordType() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "T" }; }
+NDEFRecordType NDEFRecordType::uriRecordType() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "U" }; }
+NDEFRecordType NDEFRecordType::smartPosterRecordType()
+{
+  return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "Sp" };
+}
+NDEFRecordType NDEFRecordType::genericControlRecordType()
+{
+  return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "Gc" };
+}
+
+NDEFRecordType NDEFRecordType::spActionRecordType()
+{
+  return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "act" };
+}
+NDEFRecordType NDEFRecordType::spSizeRecordType() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "s" }; }
+NDEFRecordType NDEFRecordType::spTypeRecordType() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "t" }; }
+
+NDEFRecordType NDEFRecordType::gcTargetRecordType() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "t" }; }
+NDEFRecordType NDEFRecordType::gcActionRecordType() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "t" }; }
+NDEFRecordType NDEFRecordType::gcDataRecordType() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "d" }; }
