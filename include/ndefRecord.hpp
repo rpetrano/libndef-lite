@@ -1,3 +1,7 @@
+/*! Implementation of the record component of the NDEF standard
+ * \file ndefRecord.hpp
+ */
+
 #ifndef NDEF_H
 #define NDEF_H
 
@@ -44,8 +48,8 @@ public:
   void constexpr setChunked(bool flag) { this->chunked = flag; }
   bool constexpr isChunked() const { return this->chunked; }
 
-  void setPayload(const std::vector<uint8_t> data);
-  void appendPayload(const std::vector<uint8_t> data);
+  void setPayload(const std::vector<uint8_t>& data);
+  void appendPayload(const std::vector<uint8_t>& data);
   std::vector<uint8_t> payload() const { return this->payloadData; }
   size_t constexpr payloadLength() const { return this->payloadData.size(); }
 
@@ -57,17 +61,49 @@ public:
   bool constexpr isValid() const { return (this->recordType.id() != NDEFRecordType::TypeID::Invalid); }
 
   // Record creation helpers
-  
+
   // Text records
-  static NDEFRecord createTextRecord(const std::string &text, const std::string &locale, RecordTextCodec codec=RecordTextCodec::UTF8);
-  static std::string textLocale(const std::vector<uint8_t> &payload);
+
+  /// \param text std::u16string to be converted
+  /// \param locale string's locale. Should be kept <= 5 characters, which is the max limit set by the NDEF standard
+  /// \return NDEFRecord object with \p text encoded in UTF-16
+  static NDEFRecord createTextRecord(const std::u16string& text, const std::string& locale);
+
+  /// \param text string to be converted
+  /// \param locale string's locale. Should be kept <= 5 characters, which is the max limit set by the NDEF standard
+  /// \param codec RecordTextCodec enum variant representing whether this is a UTF-8 or UTF-16 encoded string
+  /// \return NDEFRecord object with \p text encoded in whatever is specified by \p codec
+  static NDEFRecord createTextRecord(const std::string& text, const std::string& locale,
+                                     RecordTextCodec codec = RecordTextCodec::UTF8);
+
+  /// \param textBytes const vector reference of text bytes
+  /// \param locale string's locale. Should be kept <= 5 characters, which is the max limit set by the NDEF standard
+  /// \param codec RecordTextCodec enum variant representing whether this is a UTF-8 or UTF-16 encoded string
+  /// \return vector of bytes with encoding/locale bytes configured
+  static vector<uint8_t> init_text_record_payload(const std::vector<uint8_t>& textBytes, const std::string& locale,
+                                                  RecordTextCodec codec);
+
+  /// \param text const vector reference of text bytes
+  /// \param locale string's locale. Should be kept <= 5 characters, which is the max limit set by the NDEF standard
+  /// \param codec RecordTextCodec enum variant representing whether this is a UTF-8 or UTF-16 encoded string
+  /// \return vector of bytes with encoding/locale bytes configured
+  static vector<uint8_t> init_text_record_payload(const std::string& text, const std::string& locale,
+                                                  RecordTextCodec codec);
+
+  /// \param payload vector of bytes to have locale extracted from
+  /// \return ASCII string representation of locale in payload
+  static std::string textLocale(const std::vector<uint8_t>& payload);
+
+  /// \param payload vector of bytes to have locale extracted from
+  /// \return string UTF-8 encoded string of record's contents
   static std::string textFromTextPayload(const std::vector<uint8_t>& payload);
 
+private:
   // NDEF Record Fields
 
-  /// Specifies record type. Must follow the structure, encoding, and format implied by the value of the TNF field. If
-  /// a NDEF record is received with a supported TNF field but unknown TYPE field value, the type identifier will be
-  /// treated as if the TNF field were `0x05` (Unknown)
+  /// Specifies record type. Must follow the structure, encoding, and format implied by the value of the TNF field.
+  /// If a NDEF record is received with a supported TNF field but unknown TYPE field value, the type identifier will
+  /// be treated as if the TNF field were `0x05` (Unknown)
   ///
   /// For example, if the TNF is set to 0x01 the record type might be `T` to indicate a text message, `U` for a URI
   /// message. If the TNF is set 0x02 then the record type might be one of "text/json", "text/plain", "image/png",
