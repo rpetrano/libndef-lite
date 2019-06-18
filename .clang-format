@@ -1,0 +1,22 @@
+Language: Cpp
+
+# LLVM Defaults
+BasedOnStyle: LLVM
+ColumnLimit: 120
+
+# Force pointers to the type for C++.
+DerivePointerAlignment: false
+PointerAlignment: Left
+
+# Spaces in list initialization
+Cpp11BracedListStyle: false
+
+# Brace formatting
+BreakBeforeBraces: Custom
+BraceWrapping:
+    AfterFunction: true
+    AfterStruct: true
+
+AlwaysBreakTemplateDeclarations: Yes
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+BreakConstructorInitializers: BeforeColon
