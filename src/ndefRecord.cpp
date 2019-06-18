@@ -71,6 +71,9 @@
 #include "recordHeader.hpp"
 #include "util.hpp"
 
+#define BOM_BE_1ST static_cast<char>('\xef')
+#define BOM_LE_2ND static_cast<char>('\xff')
+
 using namespace std;
 using namespace util;
 
@@ -347,7 +350,7 @@ NDEFRecord NDEFRecord::create_text_record(const u16string& text, const string& l
 {
   NDEFRecord record;
 
-  if ((text.at(0) == '\xff' && text.at(1) == '\xfe') || (text.at(0) == '\xfe' && text.at(1) == '\xff')) {
+  if (encoding::has_BOM(text)) {
     // BOM already present, don't
     record = create_text_record(string{ text.begin(), text.end() }, locale, RecordTextCodec::UTF16);
   } else {

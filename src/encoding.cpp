@@ -70,4 +70,16 @@ std::u16string from_utf16le_bytes(const std::vector<uint8_t>& src)
   std::wstring_convert<std::codecvt_utf8_utf16<char16_t, 0x10ffff, std::codecvt_mode::little_endian>, char16_t> conv;
   return conv.from_bytes(std::string{ src.begin(), src.end() });
 }
+
+/// Checks for UTF Byte Order Mark in UTF-16 string
+bool has_BOM(const std::vector<uint8_t>& bytes)
+{
+  return (bytes.at(0) == '\xff' && bytes.at(1) == '\xfe') || (bytes.at(0) == '\xff' && bytes.at(1) == '\xfe');
+}
+
+/// Checks for UTF Byte Order Mark in UTF-16 string
+bool has_BOM(const std::string& text)
+{
+  return (text.at(0) == '\xff' && text.at(1) == '\xfe') || (text.at(0) == '\xff' && text.at(1) == '\xfe');
+}
 } // namespace encoding

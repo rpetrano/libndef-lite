@@ -56,9 +56,9 @@ TEST_CASE("Create valid NDEF Record from known valid bytes", "[ndefFromBytesVali
 
   CHECK(record.id().length() == 0);
   CHECK(record.id() == "");
-  CHECK(record.isShort());
-  CHECK_FALSE(record.isChunked());
-  CHECK(record.payloadLength() == 19);
+  CHECK(record.is_short());
+  CHECK_FALSE(record.is_chunked());
+  CHECK(record.payload_length() == 19);
   CHECK(record.type().name().length() == 1);
   CHECK(record.type().name() == "T");
 
@@ -93,7 +93,7 @@ TEST_CASE("Valid NDEF Record returns valid bytes", "[bytesFromRecord]")
   NDEFRecord record = NDEFRecord::from_bytes(testBytes);
 
   // Convert record to bytes
-  vector<uint8_t> bytes = record.asBytes();
+  vector<uint8_t> bytes = record.as_bytes();
 
   REQUIRE(bytes.size() == testBytes.size());
   for (size_t i = 0; i < testBytes.size(); i++) {
