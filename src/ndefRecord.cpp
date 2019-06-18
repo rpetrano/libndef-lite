@@ -82,10 +82,10 @@ NDEFRecord::NDEFRecord()
   this->payloadData = vector<uint8_t>{};
 }
 
-NDEFRecord::NDEFRecord(const NDEFRecordType& type, const std::vector<uint8_t>& payload, bool chunked)
+NDEFRecord::NDEFRecord(const NDEFRecordType& type, const vector<uint8_t>& payload, bool chunked)
     : recordType(type), chunked(chunked)
 {
-  this->setPayload(payload);
+  this->set_payload(payload);
 }
 
 /// Creates header byte from information known to NDEF Record. Other values will be set by NDEFMessage
@@ -97,28 +97,28 @@ uint8_t NDEFRecord::header() const
   flags |= static_cast<uint8_t>(this->recordType.id());
 
   // If record < 256 bytes then this is a short record
-  flags |= this->isShort() ? static_cast<uint8_t>(RecordFlag::SR) : 0;
+  flags |= this->is_short() ? static_cast<uint8_t>(RecordFlag::SR) : 0;
 
   // If ID field has any value, set ID_LENGTH field
   flags |= (this->idField.size() > 0) ? static_cast<uint8_t>(RecordFlag::IL) : 0;
 
   // Check if record is chunked
-  flags |= this->isChunked() ? static_cast<uint8_t>(RecordFlag::CF) : 0;
+  flags |= this->is_chunked() ? static_cast<uint8_t>(RecordFlag::CF) : 0;
 
   return flags;
 }
 
-/// Wrapper around fromByte(vector<uint8_t>) that converts the array to a vector
-NDEFRecord NDEFRecord::fromBytes(uint8_t bytes[], size_t size, size_t offset)
+/// Wrapper around from_byte(vector<uint8_t>) that converts the array to a vector
+NDEFRecord NDEFRecord::from_bytes(uint8_t bytes[], size_t size, size_t offset)
 {
   // Create vector from byte array
   vector<uint8_t> bytesVec(bytes, bytes + size);
 
-  return fromBytes(bytesVec, offset);
+  return from_bytes(bytesVec, offset);
 }
 
 /// Allows us to convert from the raw bytes from the NFC tag into a NDEFRecord struct
-NDEFRecord NDEFRecord::fromBytes(vector<uint8_t> bytes, size_t offset)
+NDEFRecord NDEFRecord::from_bytes(vector<uint8_t> bytes, size_t offset)
 {
   if (bytes.size() < 4) {
     // There are at least 4 required octets (field)
@@ -126,7 +126,7 @@ NDEFRecord NDEFRecord::fromBytes(vector<uint8_t> bytes, size_t offset)
   }
 
   // Generate type field from first byte
-  auto recordType = NDEFRecordType::fromBytes(bytes, offset);
+  auto recordType = NDEFRecordType::from_bytes(bytes, offset);
 
   // If the bytes were invalid then return early without further parsing (indicates lack of bytes)
   if (recordType.id() == NDEFRecordType::TypeID::Invalid) {
@@ -138,7 +138,7 @@ NDEFRecord NDEFRecord::fromBytes(vector<uint8_t> bytes, size_t offset)
   deque<uint8_t> vals(make_move_iterator(bytes.begin()), make_move_iterator(bytes.end()));
 
   // Pop off front byte (header already created)
-  auto header = NDEFRecordHeader::fromByte(popFront(vals));
+  auto header = NDEFRecordHeader::from_byte(popFront(vals));
   uint8_t typeLength = popFront(vals);
 
   uint32_t payloadLength;
@@ -200,15 +200,15 @@ NDEFRecord NDEFRecord::fromBytes(vector<uint8_t> bytes, size_t offset)
 }
 
 /// Creates the bytes representation of the Record object passed
-vector<uint8_t> NDEFRecord::asBytes() const
+vector<uint8_t> NDEFRecord::as_bytes() const
 {
   // Vector to create record byte array from
   vector<uint8_t> bytes;
 
   NDEFRecordHeader header{ .tnf = this->recordType.id(),
                            .il = (this->id().length() > 0),
-                           .sr = this->isShort(),
-                           .cf = this->isChunked(),
+                           .sr = this->is_short(),
+                           .cf = this->is_chunked(),
                            // Assume this record is only record, set message end/message begin. NDEFMessage may change
                            .me = true,
                            .mb = true };
@@ -220,7 +220,7 @@ vector<uint8_t> NDEFRecord::asBytes() const
   bytes.push_back(recordType.name().length());
 
   // Add payload length, dependant on the Short Record flag
-  if (this->isShort()) {
+  if (this->is_short()) {
     assert(payloadData.size() < 256);
     bytes.push_back(static_cast<uint8_t>(payloadData.size()));
   } else {
@@ -263,7 +263,7 @@ vector<uint8_t> NDEFRecord::asBytes() const
 }
 
 /// Update the payload stored in this NDEFRecord object, validating the record after doing so
-void NDEFRecord::setPayload(const std::vector<uint8_t>& data)
+void NDEFRecord::set_payload(const vector<uint8_t>& data)
 {
   payloadData = data;
 
@@ -272,7 +272,7 @@ void NDEFRecord::setPayload(const std::vector<uint8_t>& data)
 }
 
 /// Append bytes provided to payload stored in this NDEFRecord object, validating the record after doing so
-void NDEFRecord::appendPayload(const std::vector<uint8_t>& data)
+void NDEFRecord::append_payload(const vector<uint8_t>& data)
 {
   // Reserve required space in advance to improve extension performance
   payloadData.reserve(payloadData.size() + distance(data.begin(), data.end()));
@@ -293,82 +293,73 @@ void NDEFRecord::validate()
 }
 
 /// Generates the text record's initial bytes based on the contents passed
-vector<uint8_t> NDEFRecord::init_text_record_payload(const std::vector<uint8_t>& textBytes, const std::string& locale,
+vector<uint8_t> NDEFRecord::init_text_record_payload(const vector<uint8_t>& textBytes, const string& locale,
                                                      RecordTextCodec codec)
 {
   NDEFRecord record;
   vector<uint8_t> payload;
 
   // Locale string must be at most 5 characters
-  const uint localeLength = min(locale.length(), static_cast<size_t>(5));
+  const uint locale_length = min(locale.length(), static_cast<size_t>(5));
 
   // Reserve space required to speed up insertions later (status byte + locale string + text)
-  payload.reserve(1 + localeLength + textBytes.size());
+  payload.reserve(1 + locale_length + textBytes.size());
 
   // Set type as Text Well Known Type
-  record.setType(NDEFRecordType::textRecordType());
+  record.set_type(NDEFRecordType::textRecordType());
 
   // Combine codec encoding (bit 7) and locale length (bits 5..0) for first byte
-  uint8_t statusByte = 0x00 | (static_cast<uint8_t>(codec) & 0x80) | (localeLength & 0x3f);
+  uint8_t statusByte = 0x00 | (static_cast<uint8_t>(codec) & 0x80) | (locale_length & 0x3f);
   payload.push_back(statusByte);
 
   // Add <=5 chars from locale string to payload
-  payload.insert(payload.end(), locale.begin(), locale.begin() + localeLength);
+  payload.insert(payload.end(), locale.begin(), locale.begin() + locale_length);
 
   return payload;
 }
 
 /// Generates the text record's initial bytes based on the contents of the text string passed
-/// \note wrapper around init_text_record_payload(const std::vector<uint8_t>&, const std::string&, RecordTextCodec)
-vector<uint8_t> NDEFRecord::init_text_record_payload(const std::string& text, const std::string& locale,
-                                                     RecordTextCodec codec)
+/// \note wrapper around init_text_record_payload(const vector<uint8_t>&, const string&, RecordTextCodec)
+vector<uint8_t> NDEFRecord::init_text_record_payload(const string& text, const string& locale, RecordTextCodec codec)
 {
   return init_text_record_payload(vector<uint8_t>{ text.begin(), text.end() }, locale, codec);
 }
 
 /// Creates NDEF Text record from the UTF-8 string provided
-NDEFRecord NDEFRecord::createTextRecord(const std::string& text, const std::string& locale, RecordTextCodec codec)
+NDEFRecord NDEFRecord::create_text_record(const string& text, const string& locale, RecordTextCodec codec)
 {
   NDEFRecord record;
-  vector<uint8_t> payload;
+  vector<uint8_t> payload = init_text_record_payload(text, locale, codec);
 
   // Set type as Text Well Known Type
-  record.setType(NDEFRecordType::textRecordType());
+  record.set_type(NDEFRecordType::textRecordType());
 
   // Add text to payload
-  // Check if any byte reordering needs to happen
-  if (codec == RecordTextCodec::UTF16) {
-    // Handle Unicode Byte-Order-Mark (BOM) - may be omitted, but the UTF-16 bytes must be in big-endian then
-    if ((text.at(0) == '\xff' && text.at(1) == '\xfe') || (text.at(0) == '\xfe' && text.at(1) == '\xff')) {
-      // BOM present, add bytes
-      payload.insert(payload.end(), text.begin(), text.end());
-    } else {
-      // No BOM - store as big endian
-    }
-  }
+  payload.insert(payload.end(), text.begin(), text.end());
+  record.set_payload(payload);
 
   return record;
 }
 
 /// Creates NDEF Text record from the UTF-16 string provided
-/// \note wrapper around createTextRecord(const std::string&, const std::string&, RecordTextCodec)
-NDEFRecord NDEFRecord::createTextRecord(const std::u16string& text, const std::string& locale)
+/// \note wrapper around create_text_record(const string&, const string&, RecordTextCodec)
+NDEFRecord NDEFRecord::create_text_record(const u16string& text, const string& locale)
 {
   NDEFRecord record;
 
   if ((text.at(0) == '\xff' && text.at(1) == '\xfe') || (text.at(0) == '\xfe' && text.at(1) == '\xff')) {
     // BOM already present, don't
-    record = createTextRecord(string{ text.begin(), text.end() }, locale, RecordTextCodec::UTF16);
+    record = create_text_record(string{ text.begin(), text.end() }, locale, RecordTextCodec::UTF16);
   } else {
     // Encoding not specified, convert to UTF-8-sized bytes in Big Endian order
-    record = createTextRecord(encoding::to_utf8(text), locale, RecordTextCodec::UTF16);
+    record = create_text_record(encoding::to_utf8(text), locale, RecordTextCodec::UTF16);
   }
 
   return record;
 }
 
 /// Extracts the text locale in string form from the payload vector passed
-std::string NDEFRecord::textLocale(const std::vector<uint8_t>& payload)
+string NDEFRecord::text_locale(const vector<uint8_t>& payload)
 {
   // Get the length of the locale string from the payload - max 5 characters
   const uint localeLength = min((payload.at(0) & 0x1f), 5);
@@ -376,12 +367,16 @@ std::string NDEFRecord::textLocale(const std::vector<uint8_t>& payload)
 }
 
 /// Extracts stored text from record
-std::string NDEFRecord::textFromTextPayload(const std::vector<uint8_t>& payload)
+string NDEFRecord::text_from_text_payload(const vector<uint8_t>& payload)
 {
-  const uint detailByte = payload.at(0);
-  const uint localeLength = detailByte & 0x1f;
-  const std::string recordText{ payload.begin() + 1 + localeLength, payload.end() };
+  const uint status_byte = payload.at(0);
+  const uint locale_length = status_byte & 0x1f;
+  vector<uint8_t> record_bytes{ payload.begin() + 1 + locale_length, payload.end() };
 
-  if (detailByte & static_cast<uint8_t>(RecordTextCodec::UTF16)) {
+  // Convert to UTF-8 string, handling UTF-16 if need be
+  if (status_byte & static_cast<uint8_t>(RecordTextCodec::UTF16)) {
+    return encoding::to_utf8(encoding::to_utf16(record_bytes));
+  } else {
+    return std::string{ record_bytes.begin(), record_bytes.end() };
   }
 }

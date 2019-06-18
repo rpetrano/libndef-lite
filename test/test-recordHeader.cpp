@@ -12,7 +12,7 @@ TEST_CASE("Simple Record Header", "[simpleRecordHeader]")
     .il = true,
     .tnf = static_cast<NDEFRecordType::TypeID>(0x07),
   };
-  auto recordHeader = NDEFRecordHeader::fromByte(newByte);
+  auto recordHeader = NDEFRecordHeader::from_byte(newByte);
 
   REQUIRE(expected == recordHeader);
 }
@@ -28,7 +28,7 @@ TEST_CASE("Short Record header", "[shortRecordHeader]")
     .il = false,
     .tnf = NDEFRecordType::TypeID::WellKnown,
   };
-  auto recordHeader = NDEFRecordHeader::fromByte(newByte);
+  auto recordHeader = NDEFRecordHeader::from_byte(newByte);
 
   REQUIRE(expected == recordHeader);
 }

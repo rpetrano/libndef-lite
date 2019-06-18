@@ -48,6 +48,13 @@ std::u16string to_utf16(const std::u32string& src)
   return to_utf16(to_utf8(src));
 }
 
+/// Converts byte vector to UTF-16 text
+std::u16string to_utf16(const std::vector<uint8_t>& src)
+{
+  std::wstring_convert<std::codecvt_utf8_utf16<char16_t, 0x10ffff, std::codecvt_mode::consume_header>, char16_t> conv;
+  return conv.from_bytes(std::string{ src.begin(), src.end() });
+}
+
 /// Converts UTF-16 string (\t std::u16string) to vector of \t uint8_t in Little Endian order
 std::vector<uint8_t> to_utf16le_bytes(const std::u16string& src)
 {

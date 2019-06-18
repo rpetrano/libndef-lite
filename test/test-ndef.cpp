@@ -52,7 +52,7 @@ TEST_CASE("Create valid NDEF Record from known valid bytes", "[ndefFromBytesVali
 
   vector<uint8_t> testBytes = validTextRecordBytes();
 
-  NDEFRecord record = NDEFRecord::fromBytes(testBytes);
+  NDEFRecord record = NDEFRecord::from_bytes(testBytes);
 
   CHECK(record.id().length() == 0);
   CHECK(record.id() == "");
@@ -90,7 +90,7 @@ TEST_CASE("Valid NDEF Record returns valid bytes", "[bytesFromRecord]")
 
   // Create known valid text record
   vector<uint8_t> testBytes = validTextRecordBytes();
-  NDEFRecord record = NDEFRecord::fromBytes(testBytes);
+  NDEFRecord record = NDEFRecord::from_bytes(testBytes);
 
   // Convert record to bytes
   vector<uint8_t> bytes = record.asBytes();

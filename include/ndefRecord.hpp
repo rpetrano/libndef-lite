@@ -28,37 +28,37 @@ public:
   // Conversion helpers
 
   /// \return vector of uint8 byte values
-  std::vector<uint8_t> asBytes() const;
+  std::vector<uint8_t> as_bytes() const;
 
   /// \param bytes array of bytes (uint8_t) that will be used to attempt to create a Record object
   /// \return Record object created from bytes
-  static NDEFRecord fromBytes(uint8_t bytes[], size_t len, size_t offset = 0);
+  static NDEFRecord from_bytes(uint8_t bytes[], size_t len, size_t offset = 0);
 
   /// \param bytes vector of bytes (uint8_t) that will be used to attempt to create a NDEFRecord object
   /// \return NDEFRecord object created from bytes
-  static NDEFRecord fromBytes(std::vector<uint8_t> bytes, size_t offset = 0);
+  static NDEFRecord from_bytes(std::vector<uint8_t> bytes, size_t offset = 0);
 
   // Accessors/Mutators
-  void setId(const std::string& newId) { this->idField = newId; }
+  void set_id(const std::string& newId) { this->idField = newId; }
   std::string id() const { return this->idField; }
 
-  void constexpr setType(const NDEFRecordType& type) { this->recordType = type; }
+  void constexpr set_type(const NDEFRecordType& type) { this->recordType = type; }
   NDEFRecordType type() const { return this->recordType; }
 
-  void constexpr setChunked(bool flag) { this->chunked = flag; }
-  bool constexpr isChunked() const { return this->chunked; }
+  void constexpr set_chunked(bool flag) { this->chunked = flag; }
+  bool constexpr is_chunked() const { return this->chunked; }
 
-  void setPayload(const std::vector<uint8_t>& data);
-  void appendPayload(const std::vector<uint8_t>& data);
+  void set_payload(const std::vector<uint8_t>& data);
+  void append_payload(const std::vector<uint8_t>& data);
   std::vector<uint8_t> payload() const { return this->payloadData; }
-  size_t constexpr payloadLength() const { return this->payloadData.size(); }
+  size_t constexpr payload_length() const { return this->payloadData.size(); }
 
   // General information
   uint8_t header() const;
 
-  bool constexpr isShort() const { return (this->payloadLength() < 256); }
-  bool constexpr isEmpty() const { return (this->recordType.id() == NDEFRecordType::TypeID::Empty); }
-  bool constexpr isValid() const { return (this->recordType.id() != NDEFRecordType::TypeID::Invalid); }
+  bool constexpr is_short() const { return (this->payload_length() < 256); }
+  bool constexpr is_empty() const { return (this->recordType.id() == NDEFRecordType::TypeID::Empty); }
+  bool constexpr is_valid() const { return (this->recordType.id() != NDEFRecordType::TypeID::Invalid); }
 
   // Record creation helpers
 
@@ -67,36 +67,36 @@ public:
   /// \param text std::u16string to be converted
   /// \param locale string's locale. Should be kept <= 5 characters, which is the max limit set by the NDEF standard
   /// \return NDEFRecord object with \p text encoded in UTF-16
-  static NDEFRecord createTextRecord(const std::u16string& text, const std::string& locale);
+  static NDEFRecord create_text_record(const std::u16string& text, const std::string& locale);
 
   /// \param text string to be converted
   /// \param locale string's locale. Should be kept <= 5 characters, which is the max limit set by the NDEF standard
   /// \param codec RecordTextCodec enum variant representing whether this is a UTF-8 or UTF-16 encoded string
   /// \return NDEFRecord object with \p text encoded in whatever is specified by \p codec
-  static NDEFRecord createTextRecord(const std::string& text, const std::string& locale,
-                                     RecordTextCodec codec = RecordTextCodec::UTF8);
+  static NDEFRecord create_text_record(const std::string& text, const std::string& locale,
+                                       RecordTextCodec codec = RecordTextCodec::UTF8);
 
   /// \param textBytes const vector reference of text bytes
   /// \param locale string's locale. Should be kept <= 5 characters, which is the max limit set by the NDEF standard
   /// \param codec RecordTextCodec enum variant representing whether this is a UTF-8 or UTF-16 encoded string
   /// \return vector of bytes with encoding/locale bytes configured
-  static vector<uint8_t> init_text_record_payload(const std::vector<uint8_t>& textBytes, const std::string& locale,
-                                                  RecordTextCodec codec);
+  static std::vector<uint8_t> init_text_record_payload(const std::vector<uint8_t>& textBytes, const std::string& locale,
+                                                       RecordTextCodec codec);
 
   /// \param text const vector reference of text bytes
   /// \param locale string's locale. Should be kept <= 5 characters, which is the max limit set by the NDEF standard
   /// \param codec RecordTextCodec enum variant representing whether this is a UTF-8 or UTF-16 encoded string
   /// \return vector of bytes with encoding/locale bytes configured
-  static vector<uint8_t> init_text_record_payload(const std::string& text, const std::string& locale,
-                                                  RecordTextCodec codec);
+  static std::vector<uint8_t> init_text_record_payload(const std::string& text, const std::string& locale,
+                                                       RecordTextCodec codec);
 
   /// \param payload vector of bytes to have locale extracted from
   /// \return ASCII string representation of locale in payload
-  static std::string textLocale(const std::vector<uint8_t>& payload);
+  static std::string text_locale(const std::vector<uint8_t>& payload);
 
   /// \param payload vector of bytes to have locale extracted from
   /// \return string UTF-8 encoded string of record's contents
-  static std::string textFromTextPayload(const std::vector<uint8_t>& payload);
+  static std::string text_from_text_payload(const std::vector<uint8_t>& payload);
 
 private:
   // NDEF Record Fields

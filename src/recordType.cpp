@@ -10,7 +10,7 @@ NDEFRecordType::NDEFRecordType(NDEFRecordType::TypeID id, const std::string& nam
 }
 
 /// Creates an NDEFRecordType object from a vector of bytes starting at offset
-NDEFRecordType NDEFRecordType::fromBytes(std::vector<uint8_t> data, size_t offset)
+NDEFRecordType NDEFRecordType::from_bytes(std::vector<uint8_t> data, size_t offset)
 {
   // Current position within vector
   int byteOffset = 0;

@@ -2,7 +2,7 @@
 #include "recordType.hpp"
 
 /// Create a new NDEFRecordHeader object from an byte of data
-NDEFRecordHeader NDEFRecordHeader::fromByte(const uint8_t value)
+NDEFRecordHeader NDEFRecordHeader::from_byte(const uint8_t value)
 {
   return NDEFRecordHeader{ .mb = (value & static_cast<uint8_t>(RecordFlag::MB)) != 0,
                            .me = (value & static_cast<uint8_t>(RecordFlag::ME)) != 0,

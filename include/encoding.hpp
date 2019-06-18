@@ -30,6 +30,10 @@ std::u16string to_utf16(const std::u16string& src);
 /// \return std::u16string encoded in UTF-16
 std::u16string to_utf16(const std::u32string& src);
 
+/// \param src std::vector<uint8_t> source bytes to convert
+/// \return std::u16string encoded in UTF-16
+std::u16string to_utf16(const std::vector<uint8_t>& src);
+
 /// \param src std::u16string source to convert
 /// \return std::vector<uint8_t> of UTF-16LE bytes
 std::vector<uint8_t> to_utf16le(const std::u16string& src);

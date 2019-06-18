@@ -37,7 +37,7 @@ struct NDEFRecordHeader
 
   /// \param value octet (byte) of data to create NDEFRecordHeader object from
   /// \return ::NDEFRecordHeader object
-  static NDEFRecordHeader fromByte(const uint8_t value);
+  static NDEFRecordHeader from_byte(const uint8_t value);
 
   /// \param header Reference to ::NDEFRecordHeader object
   /// \return byte representation of ::NDEFRecordHeader

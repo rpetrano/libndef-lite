@@ -41,7 +41,7 @@ public:
     /// Indicates this payload is a part of a chunked record, with the type unchanged from the first chunk
     Unchanged = 0x06,
 
-    /// Invalid value, used for fromByte() helper. Value 0x07 is reserved by the NFC Forum
+    /// Invalid value, used for from_byte() helper. Value 0x07 is reserved by the NFC Forum
     Invalid = 0x07,
   };
 
@@ -50,13 +50,13 @@ public:
   /// \param data vector of octets (bytes) of data to create RecordHeader object from
   /// \param offset offset within values vector to start from
   /// \return type value matching value, ::TypeID::Invalid if \t value does not match any TypeID Name Format field
-  static NDEFRecordType fromBytes(std::vector<uint8_t> bytes, size_t offset);
+  static NDEFRecordType from_bytes(std::vector<uint8_t> bytes, size_t offset);
 
   /// \param data array of octets (bytes) of data to create RecordHeader object from
   /// \param len number of values in data array
   /// \param offset offset within values vector to start from
   /// \return type value matching value, ::TypeID::Invalid if \t value does not match any TypeID Name Format field
-  static NDEFRecordType fromBytes(uint8_t bytes[], size_t len, size_t offset);
+  static NDEFRecordType from_bytes(uint8_t bytes[], size_t len, size_t offset);
 
   // Accessors/mutators
 
