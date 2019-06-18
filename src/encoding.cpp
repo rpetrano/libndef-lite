@@ -5,7 +5,7 @@
 
 namespace encoding {
 /// Converts string to UTF-8 string
-/// \note This doesn't do anything, as \t std::string is already either UTF-8 or ASCII
+/// \note This doesn't do anything, as std::string is already either UTF-8 or ASCII
 std::string to_utf8(const std::string& src)
 {
   // Return source
@@ -37,7 +37,7 @@ std::u16string to_utf16(const std::string& src)
 }
 
 /// Converts string to UTF-16 string from UTF-16
-/// \note This doesn't do anything, as \t std::u16string is most likely already UTF-16
+/// \note This doesn't do anything, as std::u16string is most likely already UTF-16
 std::u16string to_utf16(const std::u16string& src) { return src; }
 
 /// Converts string to UTF-16 string from UTF-32
@@ -55,7 +55,7 @@ std::u16string to_utf16(const std::vector<uint8_t>& src)
   return conv.from_bytes(std::string{ src.begin(), src.end() });
 }
 
-/// Converts UTF-16 string (\t std::u16string) to vector of \t uint8_t in Little Endian order
+/// Converts UTF-16 string (std::u16string) to vector of uint8_t in Little Endian order
 std::vector<uint8_t> to_utf16le_bytes(const std::u16string& src)
 {
   std::wstring_convert<std::codecvt_utf8_utf16<char16_t, 0x10ffff, std::codecvt_mode::little_endian>, char16_t> conv;

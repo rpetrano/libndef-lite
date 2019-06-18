@@ -14,7 +14,7 @@ std::string to_utf8(const std::string& src);
 /// \return std::string encoded in UTF-8
 std::string to_utf8(const std::u16string& src);
 
-/// \param srcstd::u32string source to convert
+/// \param src std::u32string source to convert
 /// \return std::string encoded in UTF-8
 std::string to_utf8(const std::u32string& src);
 

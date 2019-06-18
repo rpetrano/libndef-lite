@@ -39,7 +39,6 @@ struct NDEFRecordHeader
   /// \return ::NDEFRecordHeader object
   static NDEFRecordHeader from_byte(const uint8_t value);
 
-  /// \param header Reference to ::NDEFRecordHeader object
   /// \return byte representation of ::NDEFRecordHeader
   uint8_t asByte();
 

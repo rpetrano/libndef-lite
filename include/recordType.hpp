@@ -1,9 +1,9 @@
 /*! Type Name Format Field
- * \file typeNameFormat.hpp
+ * \file recordType.hpp
  *
  * This code provides helper functions and whatnot for the NFC Forum standard Type Name Format field
  *
- * \author Nathanael Olander (RPiAwesomeness)
+ * \author RPiAwesomeness
  * \bug No known bugs
  */
 
@@ -47,15 +47,15 @@ public:
 
   NDEFRecordType(TypeID id = TypeID::Empty, const std::string& name = "");
 
-  /// \param data vector of octets (bytes) of data to create RecordHeader object from
+  /// \param bytes vector of octets (bytes) of data to create RecordHeader object from
   /// \param offset offset within values vector to start from
-  /// \return type value matching value, ::TypeID::Invalid if \t value does not match any TypeID Name Format field
+  /// \return type value matching value, ::TypeID::Invalid if value does not match any TypeID Name Format field
   static NDEFRecordType from_bytes(std::vector<uint8_t> bytes, size_t offset);
 
-  /// \param data array of octets (bytes) of data to create RecordHeader object from
+  /// \param bytes array of octets (bytes) of data to create RecordHeader object from
   /// \param len number of values in data array
   /// \param offset offset within values vector to start from
-  /// \return type value matching value, ::TypeID::Invalid if \t value does not match any TypeID Name Format field
+  /// \return type value matching value, #TypeID::Invalid if value does not match any TypeID Name Format field
   static NDEFRecordType from_bytes(uint8_t bytes[], size_t len, size_t offset);
 
   // Accessors/mutators

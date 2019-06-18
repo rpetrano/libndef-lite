@@ -30,11 +30,14 @@ public:
   /// \return vector of uint8 byte values
   std::vector<uint8_t> as_bytes() const;
 
-  /// \param bytes array of bytes (uint8_t) that will be used to attempt to create a Record object
+  /// \param bytes array of bytes (uint8_t) that will be used to attempt to create an NDEFRecord object
+  /// \param len number of elements in \p bytes array
+  /// \param offset byte offset to start from
   /// \return Record object created from bytes
   static NDEFRecord from_bytes(uint8_t bytes[], size_t len, size_t offset = 0);
 
-  /// \param bytes vector of bytes (uint8_t) that will be used to attempt to create a NDEFRecord object
+  /// \param bytes vector of bytes (uint8_t) that will be used to attempt to create an NDEFRecord object
+  /// \param offset byte offset to start from
   /// \return NDEFRecord object created from bytes
   static NDEFRecord from_bytes(std::vector<uint8_t> bytes, size_t offset = 0);
 
@@ -51,6 +54,9 @@ public:
   void set_payload(const std::vector<uint8_t>& data);
   void append_payload(const std::vector<uint8_t>& data);
   std::vector<uint8_t> payload() const { return this->payloadData; }
+
+  /// Access number of bytes in the payload
+  /// \return size_t number of bytes in the payload
   size_t constexpr payload_length() const { return this->payloadData.size(); }
 
   // General information
@@ -76,20 +82,6 @@ public:
   static NDEFRecord create_text_record(const std::string& text, const std::string& locale,
                                        RecordTextCodec codec = RecordTextCodec::UTF8);
 
-  /// \param textBytes const vector reference of text bytes
-  /// \param locale string's locale. Should be kept <= 5 characters, which is the max limit set by the NDEF standard
-  /// \param codec RecordTextCodec enum variant representing whether this is a UTF-8 or UTF-16 encoded string
-  /// \return vector of bytes with encoding/locale bytes configured
-  static std::vector<uint8_t> init_text_record_payload(const std::vector<uint8_t>& textBytes, const std::string& locale,
-                                                       RecordTextCodec codec);
-
-  /// \param text const vector reference of text bytes
-  /// \param locale string's locale. Should be kept <= 5 characters, which is the max limit set by the NDEF standard
-  /// \param codec RecordTextCodec enum variant representing whether this is a UTF-8 or UTF-16 encoded string
-  /// \return vector of bytes with encoding/locale bytes configured
-  static std::vector<uint8_t> init_text_record_payload(const std::string& text, const std::string& locale,
-                                                       RecordTextCodec codec);
-
   /// \param payload vector of bytes to have locale extracted from
   /// \return ASCII string representation of locale in payload
   static std::string text_locale(const std::vector<uint8_t>& payload);
@@ -97,6 +89,20 @@ public:
   /// \param payload vector of bytes to have locale extracted from
   /// \return string UTF-8 encoded string of record's contents
   static std::string text_from_text_payload(const std::vector<uint8_t>& payload);
+
+  // URI Records
+
+  /// \param uri string of URI to encode
+  /// \return NDEFRecord object with URI encoded
+  static NDEFRecord create_uri_record(const std::string& uri);
+
+  /// \param payload vector of bytes to have URI protocol extracted from
+  /// \return string UTF-8 encoded string of record's URI protocol
+  static std::string get_uri_protocol(const std::vector<uint8_t>& payload);
+
+  /// \param payload vector of bytes to have URI extracted from
+  /// \return string UTF-8 encoded string of record's URI
+  static std::string get_uri(const std::vector<uint8_t>& payload);
 
 private:
   // NDEF Record Fields
@@ -115,11 +121,27 @@ private:
   /// Only included if the `IL` flag is set in the record header and the ID_LENGTH field is > 0
   std::string idField;
 
-  /// Payload - A slice of octets, the length of which is declared in #payloadLength
+  /// Payload - A slice of octets, the length of which is retrievable via ::payload_length()
   std::vector<uint8_t> payloadData;
 
   /// Whether this is a part of a chunked record or not
   bool chunked;
+
+  // Helper functionality
+
+  /// \param textBytes const vector reference of text bytes
+  /// \param locale string's locale. Should be kept <= 5 characters, which is the max limit set by the NDEF standard
+  /// \param codec RecordTextCodec enum variant representing whether this is a UTF-8 or UTF-16 encoded string
+  /// \return vector of bytes with encoding/locale bytes configured
+  static std::vector<uint8_t> init_text_record_payload(const std::vector<uint8_t>& textBytes, const std::string& locale,
+                                                       RecordTextCodec codec);
+
+  /// \param text const vector reference of text bytes
+  /// \param locale string's locale. Should be kept <= 5 characters, which is the max limit set by the NDEF standard
+  /// \param codec RecordTextCodec enum variant representing whether this is a UTF-8 or UTF-16 encoded string
+  /// \return vector of bytes with encoding/locale bytes configured
+  static std::vector<uint8_t> init_text_record_payload(const std::string& text, const std::string& locale,
+                                                       RecordTextCodec codec);
 
   // RELEASE: Below kept for reference. Will be removed for release
   /// NDEF Record header object

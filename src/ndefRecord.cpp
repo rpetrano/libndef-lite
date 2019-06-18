@@ -22,7 +22,7 @@
  * - Message End - 1 bit (bit 6)
  *     - Required
  *     - Indicates if this is the last record in the message
- *     - If both \t mb and \t me are set in a header then the record is the only record in the message
+ *     - If both mb and me are set in a header then the record is the only record in the message
  * - Chunk Flag - 1 bit (bit 5)
  *     - Required
  *     - Indicates if this the first record chunk or in the middle
