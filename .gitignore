@@ -2,6 +2,10 @@
 **/*.rs.bk
 Cargo.lock
 .vscode
-doc/
+docs/_build
+docs/_static
+docs/_templates
+docs/doxyoutput
+docs/api
 obj/
 bin/
