@@ -7,10 +7,9 @@ Welcome to libndef's documentation!
 ===================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents
+    :maxdepth: 2
+    :caption: Contents
 
-   about
-   api/library_root
+    api/library_root
 
-.. mdinclude: ../README.md
+.. mdinclude:: ../README.md

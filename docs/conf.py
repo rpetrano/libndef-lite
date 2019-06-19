@@ -14,6 +14,7 @@
 #
 import os
 import sys
+
 # sys.path.insert(0, os.path.abspath('.'))
 
 
@@ -28,7 +29,6 @@ version = u''
 # The full version, including alpha/beta/rc tags
 release = u'0.0.1'
 
-
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -39,9 +39,12 @@ release = u'0.0.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'm2r',
     'breathe',
     'exhale'
 ]
+
+# Markdown support
 
 # Setup the breathe extension
 breathe_projects = {
@@ -80,8 +83,7 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
 
 # The master toctree document.
 master_doc = 'index'

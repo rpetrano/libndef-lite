@@ -19,7 +19,7 @@ More information about the NFC/NDEF standards through [the NFC Forum's website](
 
 ...yeah no clue currently :fire:
 
-## Examples
+## Usage
 
 ### Create NDEF Text Record and then serialize to byte array
 
