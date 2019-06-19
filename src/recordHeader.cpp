@@ -4,13 +4,15 @@
 /// Create a new NDEFRecordHeader object from an byte of data
 NDEFRecordHeader NDEFRecordHeader::from_byte(const uint8_t value)
 {
-  return NDEFRecordHeader{ .mb = (value & static_cast<uint8_t>(RecordFlag::MB)) != 0,
-                           .me = (value & static_cast<uint8_t>(RecordFlag::ME)) != 0,
-                           .cf = (value & static_cast<uint8_t>(RecordFlag::CF)) != 0,
-                           .sr = (value & static_cast<uint8_t>(RecordFlag::SR)) != 0,
-                           .il = (value & static_cast<uint8_t>(RecordFlag::IL)) != 0,
-                           // Take last 3 bits and retrieve matching TypeName
-                           .tnf = static_cast<NDEFRecordType::TypeID>(value & 0x07) };
+  return NDEFRecordHeader{
+    // Take last 3 bits and retrieve matching TypeName
+    .tnf = static_cast<NDEFRecordType::TypeID>(value & 0x07),
+    .il = (value & static_cast<uint8_t>(RecordFlag::IL)) != 0,
+    .sr = (value & static_cast<uint8_t>(RecordFlag::SR)) != 0,
+    .cf = (value & static_cast<uint8_t>(RecordFlag::CF)) != 0,
+    .me = (value & static_cast<uint8_t>(RecordFlag::ME)) != 0,
+    .mb = (value & static_cast<uint8_t>(RecordFlag::MB)) != 0,
+  };
 }
 
 /// Creates a byte representation of the NDEFRecordHeader object passed

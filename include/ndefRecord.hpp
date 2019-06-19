@@ -45,10 +45,10 @@ public:
   void set_id(const std::string& newId) { this->idField = newId; }
   std::string id() const { return this->idField; }
 
-  void constexpr set_type(const NDEFRecordType& type) { this->recordType = type; }
+  void set_type(const NDEFRecordType& type) { this->recordType = type; }
   NDEFRecordType type() const { return this->recordType; }
 
-  void constexpr set_chunked(bool flag) { this->chunked = flag; }
+  void set_chunked(bool flag) { this->chunked = flag; }
   bool constexpr is_chunked() const { return this->chunked; }
 
   void set_payload(const std::vector<uint8_t>& data);
@@ -57,12 +57,12 @@ public:
 
   /// Access number of bytes in the payload
   /// \return size_t number of bytes in the payload
-  size_t constexpr payload_length() const { return this->payloadData.size(); }
+  size_t payload_length() const { return this->payloadData.size(); }
 
   // General information
   uint8_t header() const;
 
-  bool constexpr is_short() const { return (this->payload_length() < 256); }
+  bool is_short() const { return (this->payload_length() < 256); }
   bool constexpr is_empty() const { return (this->recordType.id() == NDEFRecordType::TypeID::Empty); }
   bool constexpr is_valid() const { return (this->recordType.id() != NDEFRecordType::TypeID::Invalid); }
 

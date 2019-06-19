@@ -43,4 +43,12 @@ msg.appendRecord(NDEFRecord::create_text_record(message, "en-US"));
 std::vector<uint8_t> bytes = msg.to_bytes();
 ```
 
+## Coverage and Tests
+
+This library is currently at 71.6% test coverage according to [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) as of 2019-19-06 14:55:41.
+
+Testing is done via the [Catch2 framework](https://github.com/catchorg/Catch2) and can be executed locally by running `make test`.
+
+Coverage be checked locally by running `make coverage`.
+
 [![forthebadge](https://img.shields.io/badge/USES-BADGES-38c1d0.svg?style=for-the-badge&labelColor=45a4b8)](https://forthebadge.com)

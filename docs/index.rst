@@ -12,3 +12,5 @@ Welcome to libndef's documentation!
 
    about
    api/library_root
+
+.. mdinclude: ../README.md
