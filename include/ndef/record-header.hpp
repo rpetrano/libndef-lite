@@ -1,7 +1,7 @@
 #ifndef RECORD_HEADER_H
 #define RECORD_HEADER_H
 
-#include "recordType.hpp"
+#include "record-type.hpp"
 
 /// NDEF Record type binary flags in header
 enum class RecordFlag {

@@ -1,5 +1,5 @@
-#include "recordType.hpp"
-#include "recordHeader.hpp"
+#include "ndef/record-header.hpp"
+#include "ndef/record-type.hpp"
 
 NDEFRecordType::NDEFRecordType(NDEFRecordType::TypeID id, const std::string& name) : typeName(name), typeID(id)
 {

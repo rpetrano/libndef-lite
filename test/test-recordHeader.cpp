@@ -1,5 +1,5 @@
 #include "catch.hpp"
-#include "recordHeader.hpp"
+#include "ndef/record-header.hpp"
 
 TEST_CASE("Simple Record Header", "[simpleRecordHeader]")
 {

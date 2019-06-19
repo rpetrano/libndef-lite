@@ -1,7 +1,7 @@
 #include "catch.hpp"
-#include "ndefRecord.hpp"
-#include "recordHeader.hpp"
-#include "util.hpp"
+#include "ndef/record-header.hpp"
+#include "ndef/record.hpp"
+#include "ndef/util.hpp"
 
 std::vector<uint8_t> validTextRecordBytes()
 {

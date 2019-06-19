@@ -1,5 +1,5 @@
-#include "recordHeader.hpp"
-#include "recordType.hpp"
+#include "ndef/record-header.hpp"
+#include "ndef/record-type.hpp"
 
 /// Create a new NDEFRecordHeader object from an byte of data
 NDEFRecordHeader NDEFRecordHeader::from_byte(const uint8_t value)

@@ -1,5 +1,5 @@
 #include "catch.hpp"
-#include "encoding.hpp"
+#include "ndef/encoding.hpp"
 
 using namespace std;
 

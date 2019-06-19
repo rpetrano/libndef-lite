@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "recordType.hpp"
+#include "record-type.hpp"
 #include "util.hpp"
 
 // NDEF Text record is encoded with either UTF8 or UTF16, this is part of a byte set in the first bits of the
@@ -20,7 +20,7 @@ class NDEFRecord {
 public:
   NDEFRecord();
   NDEFRecord(const NDEFRecordType& type, const std::vector<uint8_t>& payload = std::vector<uint8_t>{},
-             bool chunked = false);
+             size_t offset = 0, bool chunked = false);
   ~NDEFRecord() = default;
 
   void validate();

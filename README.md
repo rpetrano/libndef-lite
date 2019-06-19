@@ -27,8 +27,8 @@ More information about the NFC/NDEF standards through [the NFC Forum's website](
 #include <string>
 #include <vector>
 
-#include <ndef-lite/ndef_record.hpp>
-#include <ndef-lite/ndef_message.hpp>
+#include <ndef-lite/record.hpp>
+#include <ndef-lite/message.hpp>
 
 // Create the text record for the message 
 std::string message{"I'm sorry Dave, I'm afraid I can't do that."};
@@ -37,7 +37,7 @@ std::string message{"I'm sorry Dave, I'm afraid I can't do that."};
 NDEFMessage msg;
 
 // Record defaults to UTF-8 encoding, but UTF-16 is supported
-msg.appendRecord(NDEFRecord::create_text_record(message, "en-US"));
+msg.append_record(NDEFRecord::create_text_record(message, "en-US"));
 
 // Serialize record
 std::vector<uint8_t> bytes = msg.to_bytes();
@@ -45,7 +45,7 @@ std::vector<uint8_t> bytes = msg.to_bytes();
 
 ## Coverage and Tests
 
-This library is currently at 71.6% test coverage according to [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) as of 2019-19-06 14:55:41.
+This library is currently at 73.8% test coverage according to [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) as of 2019-06-19 18:06:45.
 
 Testing is done via the [Catch2 framework](https://github.com/catchorg/Catch2) and can be executed locally by running `make test`.
 
