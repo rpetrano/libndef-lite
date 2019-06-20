@@ -50,44 +50,35 @@ public:
   /// \param bytes vector of octets (bytes) of data to create RecordHeader object from
   /// \param offset offset within values vector to start from
   /// \return type value matching value, ::TypeID::Invalid if value does not match any TypeID Name Format field
-  static NDEFRecordType from_bytes(std::vector<uint8_t> bytes, size_t offset);
+  static NDEFRecordType from_bytes(std::vector<uint8_t> bytes, size_t offset = 0);
 
   /// \param bytes array of octets (bytes) of data to create RecordHeader object from
   /// \param len number of values in data array
   /// \param offset offset within values vector to start from
   /// \return type value matching value, #TypeID::Invalid if value does not match any TypeID Name Format field
-  static NDEFRecordType from_bytes(uint8_t bytes[], size_t len, size_t offset);
+  static NDEFRecordType from_bytes(uint8_t bytes[], size_t len, size_t offset = 0);
 
   // Accessors/mutators
 
   /// Gets record type variant
   /// \return TypeID variant of tnf member
-  constexpr inline TypeID id() const { return this->typeID; }
+  constexpr inline TypeID id() const { return this->type_id; }
 
   /// Gets record type name
   /// \return string record type
-  inline std::string name() const { return this->typeName; }
+  inline std::string name() const { return this->type_name; }
 
   // Static type generators
-  static NDEFRecordType textRecordType();
-  static NDEFRecordType uriRecordType();
-  static NDEFRecordType smartPosterRecordType();
-  static NDEFRecordType genericControlRecordType();
-
-  static NDEFRecordType spActionRecordType();
-  static NDEFRecordType spSizeRecordType();
-  static NDEFRecordType spTypeRecordType();
-
-  static NDEFRecordType gcTargetRecordType();
-  static NDEFRecordType gcActionRecordType();
-  static NDEFRecordType gcDataRecordType();
+  static NDEFRecordType text_record_type();
+  static NDEFRecordType uri_record_type();
+  static NDEFRecordType invalid_record_type();
 
 private:
   /// ASCII Character/string representing record type
-  std::string typeName;
+  std::string type_name;
 
   /// Type Name Format field value
-  TypeID typeID;
+  TypeID type_id;
 };
 
 #endif // TYPE_NAME_FORMAT_H

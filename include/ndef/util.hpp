@@ -29,7 +29,7 @@ namespace util {
 /// \param queue queue of items to pop front item from
 /// \return first item in queue
 template <typename T>
-inline T popFront(std::deque<T>& queue)
+inline T pop_front(std::deque<T>& queue)
 {
   // Get front byte value and then remove it from queue
   auto byte = queue.front();
@@ -45,7 +45,7 @@ inline T popFront(std::deque<T>& queue)
 /// \param n number of items to pop from queue
 /// \return vector of values from queue
 template <typename T>
-inline std::vector<T> drainDeque(std::deque<T>& queue, size_t n)
+inline std::vector<T> drain_deque(std::deque<T>& queue, size_t n)
 {
   // Store values that have been "popped"
   std::vector<T> retVals{ queue.begin(), queue.begin() + n };

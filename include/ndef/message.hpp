@@ -15,6 +15,7 @@ public:
   NDEFMessage(const std::vector<uint8_t>& data, const NDEFRecordType& type = NDEFRecordType{}, uint offset = 0);
   NDEFMessage(const NDEFRecord& record);
   NDEFMessage(const NDEFRecordList& records);
+  ~NDEFMessage() = default;
 
   void append_record(const NDEFRecord& record);
   void insert_record(const NDEFRecord& record, uint index = 0);

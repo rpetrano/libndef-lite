@@ -45,7 +45,7 @@ std::vector<uint8_t> bytes = msg.to_bytes();
 
 ## Coverage and Tests
 
-This library is currently at 73.8% test coverage according to [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) as of 2019-06-19 18:06:45.
+This library is currently at 79.1% test coverage according to [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) as of 2019-06-20 17:05:01.
 
 Testing is done via the [Catch2 framework](https://github.com/catchorg/Catch2) and can be executed locally by running `make test`.
 

@@ -46,7 +46,7 @@ const std::string uri_identifiers[num_identifiers]{
 NDEFRecord NDEFRecord::create_uri_record(const std::string& uri)
 {
   NDEFRecord record;
-  record.set_type(NDEFRecordType::uriRecordType());
+  record.set_type(NDEFRecordType::uri_record_type());
 
   // Bytes that will be stored in record
   std::vector<uint8_t> payload;

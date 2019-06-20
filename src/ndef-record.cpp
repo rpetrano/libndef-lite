@@ -80,13 +80,21 @@ using namespace util;
 /// Default constructor creates empty NDEF record
 NDEFRecord::NDEFRecord()
 {
-  this->recordType = NDEFRecordType{};
-  this->idField = "";
-  this->payloadData = vector<uint8_t>{};
+  this->record_type = NDEFRecordType{};
+  this->id_field = "";
+  this->payload_data = vector<uint8_t>{};
 }
 
-NDEFRecord::NDEFRecord(const NDEFRecordType& type, const vector<uint8_t>& payload, size_t offset, bool chunked)
-    : recordType(type), chunked(chunked)
+NDEFRecord::NDEFRecord(const vector<uint8_t>& payload, const NDEFRecordType& type, const string& id, size_t offset,
+                       bool chunked)
+    : record_type(type), id_field(id), chunked(chunked)
+{
+  // Set payload from payload bytes, skipping bytes as specified by offset
+  this->set_payload(vector<uint8_t>{ payload.begin() + offset, payload.end() });
+}
+
+NDEFRecord::NDEFRecord(const vector<uint8_t>& payload, const NDEFRecordType& type, size_t offset, bool chunked)
+    : record_type(type), chunked(chunked)
 {
   // Set payload from payload bytes, skipping bytes as specified by offset
   this->set_payload(vector<uint8_t>{ payload.begin() + offset, payload.end() });
@@ -98,13 +106,13 @@ uint8_t NDEFRecord::header() const
   uint8_t flags = 0x00;
 
   // Set Type Name Format field
-  flags |= static_cast<uint8_t>(this->recordType.id());
+  flags |= static_cast<uint8_t>(this->record_type.id());
 
   // If record < 256 bytes then this is a short record
   flags |= this->is_short() ? static_cast<uint8_t>(RecordFlag::SR) : 0;
 
   // If ID field has any value, set ID_LENGTH field
-  flags |= (this->idField.size() > 0) ? static_cast<uint8_t>(RecordFlag::IL) : 0;
+  flags |= (this->id_field.size() > 0) ? static_cast<uint8_t>(RecordFlag::IL) : 0;
 
   // Check if record is chunked
   flags |= this->is_chunked() ? static_cast<uint8_t>(RecordFlag::CF) : 0;
@@ -122,94 +130,118 @@ NDEFRecord NDEFRecord::from_bytes(uint8_t bytes[], size_t size, size_t offset)
 }
 
 /// Allows us to convert from the raw bytes from the NFC tag into a NDEFRecord struct
-NDEFRecord NDEFRecord::from_bytes(vector<uint8_t> bytes, size_t offset)
+NDEFRecord NDEFRecord::from_bytes(vector<uint8_t> bytes, size_t offset, size_t& bytes_used)
 {
+  // Keep track of number of bytes used
+  bytes_used = 0;
+
   if (bytes.size() < 4) {
     // There are at least 4 required octets (field)
     throw NDEFException("Invalid number of octets, must have at least 4");
   }
 
   // Generate type field from first byte
-  auto recordType = NDEFRecordType::from_bytes(bytes, offset);
+  auto record_type = NDEFRecordType::from_bytes(bytes, offset);
 
   // If the bytes were invalid then return early without further parsing (indicates lack of bytes)
-  if (recordType.id() == NDEFRecordType::TypeID::Invalid) {
+  if (record_type.id() == NDEFRecordType::TypeID::Invalid) {
     // No payload and not chunked, invalid payload
-    return NDEFRecord{ recordType };
+    return NDEFRecord{ vector<uint8_t>{}, record_type };
   }
 
   // Create deque to allow pop_front
   deque<uint8_t> vals(make_move_iterator(bytes.begin()), make_move_iterator(bytes.end()));
 
   // Pop off front byte (header already created)
-  auto header = NDEFRecordHeader::from_byte(popFront(vals));
-  uint8_t typeLength = popFront(vals);
+  auto header = NDEFRecordHeader::from_byte(pop_front(vals));
+  uint8_t type_length = pop_front(vals);
 
-  uint32_t payloadLength;
+  // Header/type length bytes
+  bytes_used += 2;
+
+  uint32_t payload_length;
   if (header.sr) {
     // Payload is a short record, payload is at most 255 bytes long and length is contained in 1 byte
-    payloadLength = popFront(vals);
+    payload_length = pop_front(vals);
+
+    // One byte used for short record length
+    bytes_used += 1;
   } else {
     assertHasValues(vals, 4, "payload length");
 
     // Create uint32 from next four bytes
-    uint8_t payloadLenBytes[4]{ popFront(vals), popFront(vals), popFront(vals), popFront(vals) };
-    payloadLength = uint32FromBEBytes(payloadLenBytes);
+    uint8_t payloadLenBytes[4]{ pop_front(vals), pop_front(vals), pop_front(vals), pop_front(vals) };
+    payload_length = uint32FromBEBytes(payloadLenBytes);
+
+    // Four bytes used for record length
+    bytes_used += 4;
   }
 
-  uint8_t idLength = 0;
+  uint8_t id_length = 0;
   if (header.il) {
     assertHasValue(vals, "ID length");
-    idLength = popFront(vals);
+    id_length = pop_front(vals);
+
+    // One byte used for ID field
+    bytes_used += 1;
   }
 
   // Confirm there are enough bytes to complete type field then populate type characters from bytes
-  assertHasValues(vals, typeLength, "type length");
-  vector<uint8_t> typeBytes = drainDeque(vals, typeLength);
+  assertHasValues(vals, type_length, "type length");
+  vector<uint8_t> type_bytes = drain_deque(vals, type_length);
 
   // Create the type field from the bytes, converting them into ASCII characters after validating them
-  string typeField;
-  for (auto chr : typeBytes) {
-    if (chr < 31 || chr == 127) {
+  string type_field;
+  for (auto&& chr : type_bytes) {
+    if (chr <= 31 || chr == 127) {
       // Invalid character, no ASCII characters [0-31] or 127
       throw NDEFException("Invalid character code " + to_string(chr) + " found in type field");
     }
 
     // Append valid character to type string
-    typeField += chr;
+    type_field += chr;
   }
 
-  string idField;
+  // type_field length # of bytes used to create type field string
+  bytes_used += type_field.length();
+
+  string id_field;
 
   // Only attempt to extract ID field if the length is > 0
-  if (idLength > 0) {
+  if (id_length > 0) {
     // Check if there are enough bytes to pull out id field
-    assertHasValues(vals, idLength, "ID");
+    assertHasValues(vals, id_length, "ID");
 
     // Checked that the bytes we require are available, now collect them
-    auto idBytes = drainDeque(vals, typeLength);
+    auto id_bytes = drain_deque(vals, id_length);
 
     // Create string from UTF-8 bytes
-    for (auto chr : idBytes) {
-      idField += chr;
+    for (auto&& chr : id_bytes) {
+      id_field += chr;
     }
   }
 
+  // id_field length # of bytes used to create ID field string
+  bytes_used += id_field.length();
+
   // Collect remaining data as payload after validating length
-  assertHasValues(vals, payloadLength, "payload");
-  auto payload = drainDeque(vals, payloadLength);
+  assertHasValues(vals, payload_length, "payload");
+  auto payload = drain_deque(vals, payload_length);
+
+  // payload # of bytes used as the payload
+  bytes_used += payload.size();
 
   // Successfully built Record object from uint8_t array
-  return NDEFRecord{ recordType, payload, header.cf };
+  return NDEFRecord{ payload, record_type, id_field, header.cf };
 }
 
 /// Creates the bytes representation of the Record object passed
-vector<uint8_t> NDEFRecord::as_bytes() const
+vector<uint8_t> NDEFRecord::as_bytes(uint8_t flags) const
 {
   // Vector to create record byte array from
   vector<uint8_t> bytes;
 
-  NDEFRecordHeader header{ .tnf = this->recordType.id(),
+  NDEFRecordHeader header{ .tnf = this->record_type.id(),
                            .il = (this->id().length() > 0),
                            .sr = this->is_short(),
                            .cf = this->is_chunked(),
@@ -218,33 +250,33 @@ vector<uint8_t> NDEFRecord::as_bytes() const
                            .mb = true };
 
   // Add Record Header byte
-  bytes.push_back(header.asByte());
+  bytes.push_back(header.asByte() | flags);
 
   // Add type length field
-  bytes.push_back(recordType.name().length());
+  bytes.push_back(record_type.name().length());
 
   // Add payload length, dependant on the Short Record flag
   if (this->is_short()) {
-    assert(payloadData.size() < 256);
-    bytes.push_back(static_cast<uint8_t>(payloadData.size()));
+    assert(payload_data.size() < 256);
+    bytes.push_back(static_cast<uint8_t>(payload_data.size()));
   } else {
     uint8_t payloadLen[4] = {
-      static_cast<uint8_t>(payloadData.size() >> 24),
-      static_cast<uint8_t>(payloadData.size() >> 16),
-      static_cast<uint8_t>(payloadData.size() >> 8),
-      static_cast<uint8_t>(payloadData.size() >> 0),
+      static_cast<uint8_t>(payload_data.size() >> 24),
+      static_cast<uint8_t>(payload_data.size() >> 16),
+      static_cast<uint8_t>(payload_data.size() >> 8),
+      static_cast<uint8_t>(payload_data.size() >> 0),
     };
     // Not a short record, append all 4 bytes in big endian order
     bytes.insert(bytes.end(), { payloadLen[0], payloadLen[1], payloadLen[2], payloadLen[3] });
   }
 
   // Add ID length if applicable
-  if (header.il && idField.size() > 0) {
-    bytes.insert(bytes.end(), idField.begin(), idField.end());
+  if (header.il && id_field.size() > 0) {
+    bytes.push_back(id_field.size());
   }
 
   // Add type field
-  for (auto byte : recordType.name()) {
+  for (auto&& byte : record_type.name()) {
     // Validate each character is valid ASCII
     if (byte <= 31 || byte >= 127) {
       throw NDEFException("Invalid type field character with code " + to_string(byte));
@@ -256,11 +288,11 @@ vector<uint8_t> NDEFRecord::as_bytes() const
 
   // Add ID field if present
   if (this->id().length() > 0) {
-    bytes.insert(bytes.end(), idField.begin(), idField.end());
+    bytes.insert(bytes.end(), id_field.begin(), id_field.end());
   }
 
   // Add payload bytes
-  bytes.insert(bytes.end(), payloadData.begin(), payloadData.end());
+  bytes.insert(bytes.end(), payload_data.begin(), payload_data.end());
 
   // Return span pointing to location of vector in memory with number of bytes in vector
   return bytes;
@@ -269,20 +301,7 @@ vector<uint8_t> NDEFRecord::as_bytes() const
 /// Update the payload stored in this NDEFRecord object, validating the record after doing so
 void NDEFRecord::set_payload(const vector<uint8_t>& data)
 {
-  payloadData = data;
-
-  // Validate the record type is still valid
-  this->validate();
-}
-
-/// Append bytes provided to payload stored in this NDEFRecord object, validating the record after doing so
-void NDEFRecord::append_payload(const vector<uint8_t>& data)
-{
-  // Reserve required space in advance to improve extension performance
-  payloadData.reserve(payloadData.size() + distance(data.begin(), data.end()));
-
-  // Extend payload bytes with contents of data
-  payloadData.insert(payloadData.end(), data.begin(), data.end());
+  payload_data = data;
 
   // Validate the record type is still valid
   this->validate();
@@ -291,7 +310,8 @@ void NDEFRecord::append_payload(const vector<uint8_t>& data)
 /// Validates that if the payload has changed size then the type is no longer empty
 void NDEFRecord::validate()
 {
-  if (payloadData.size() > 0 && (recordType.id() == NDEFRecordType::TypeID::Empty)) {
-    recordType = NDEFRecordType(NDEFRecordType::TypeID::Unknown);
+  // Not sure how this would happen, but reflecting their
+  if (payload_data.size() > 0 && (record_type.id() == NDEFRecordType::TypeID::Empty)) {
+    record_type = NDEFRecordType(NDEFRecordType::TypeID::Unknown);
   }
 }

@@ -1,11 +1,11 @@
-#include "ndef/record-header.hpp"
 #include "ndef/record-type.hpp"
+#include "ndef/record-header.hpp"
 
-NDEFRecordType::NDEFRecordType(NDEFRecordType::TypeID id, const std::string& name) : typeName(name), typeID(id)
+NDEFRecordType::NDEFRecordType(NDEFRecordType::TypeID id, const std::string& name) : type_name(name), type_id(id)
 {
   // An empty record has no type name by the NDEF standard
   if (id == NDEFRecordType::TypeID::Empty) {
-    typeName.clear();
+    type_name.clear();
   }
 }
 
@@ -13,12 +13,12 @@ NDEFRecordType::NDEFRecordType(NDEFRecordType::TypeID id, const std::string& nam
 NDEFRecordType NDEFRecordType::from_bytes(std::vector<uint8_t> data, size_t offset)
 {
   // Current position within vector
-  int byteOffset = 0;
-  size_t numBytes = data.size() - offset;
+  int byte_offset = 0;
+  size_t num_bytes = data.size() - offset;
 
   // Have to have at least 2 bytes of data to create record header
-  if (numBytes < 2) {
-    return NDEFRecordType{ NDEFRecordType::TypeID::Invalid };
+  if (num_bytes < 2) {
+    return NDEFRecordType::invalid_record_type();
   }
 
   // Have the required minimum of 2 bytes, create the record with remaining data after offset
@@ -28,49 +28,43 @@ NDEFRecordType NDEFRecordType::from_bytes(std::vector<uint8_t> data, size_t offs
   uint8_t byte;
 
   // 1st byte - Header (flags and TNF)
-  byte = remaining.at(byteOffset++);
+  byte = remaining.at(byte_offset++);
 
   // TNF field is low 3 bits
   uint8_t tnf = byte & 0x07;
-  bool hasIDField = byte & static_cast<uint8_t>(RecordFlag::IL);
-  bool shortRecord = byte & static_cast<uint8_t>(RecordFlag::SR);
+  bool has_id_field = byte & static_cast<uint8_t>(RecordFlag::IL);
+  bool short_record = byte & static_cast<uint8_t>(RecordFlag::SR);
 
   // 2nd byte - Type length
-  uint8_t typeLength = remaining.at(byteOffset++);
+  uint8_t type_length = remaining.at(byte_offset++);
 
   // 1 or 4 bytes depending on SR flag - payload length (skipped)
-  byteOffset += shortRecord ? 1 : 4;
+  byte_offset += short_record ? 1 : 4;
 
   // 0 or 1 byte depending on IL flag - ID length (skipped)
-  byteOffset += hasIDField ? 1 : 0;
+  byte_offset += has_id_field ? 1 : 0;
 
-  // Type field
-  std::string typeName;
-  for (auto i = 0; i < typeLength; i++) {
-    typeName += remaining.at(byteOffset + i);
+  // Ensure required number of bytes are present
+  if (remaining.size() < type_length) {
+    return NDEFRecordType::invalid_record_type();
   }
 
-  return NDEFRecordType{ static_cast<NDEFRecordType::TypeID>(tnf), typeName };
+  // Type field
+  std::string type_name;
+  for (size_t i = 0; i < type_length; i++) {
+    type_name += remaining.at(byte_offset + i);
+  }
+
+  auto id = static_cast<NDEFRecordType::TypeID>(tnf);
+
+  // According to NDEF standard any unknown/unsupported TNF field values should be treated as 0x05 Unknown
+  if (tnf >= static_cast<uint8_t>(NDEFRecordType::TypeID::Invalid)) {
+    id = NDEFRecordType::TypeID::Unknown;
+  }
+
+  return NDEFRecordType{ id, type_name };
 }
 
-NDEFRecordType NDEFRecordType::textRecordType() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "T" }; }
-NDEFRecordType NDEFRecordType::uriRecordType() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "U" }; }
-NDEFRecordType NDEFRecordType::smartPosterRecordType()
-{
-  return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "Sp" };
-}
-NDEFRecordType NDEFRecordType::genericControlRecordType()
-{
-  return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "Gc" };
-}
-
-NDEFRecordType NDEFRecordType::spActionRecordType()
-{
-  return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "act" };
-}
-NDEFRecordType NDEFRecordType::spSizeRecordType() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "s" }; }
-NDEFRecordType NDEFRecordType::spTypeRecordType() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "t" }; }
-
-NDEFRecordType NDEFRecordType::gcTargetRecordType() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "t" }; }
-NDEFRecordType NDEFRecordType::gcActionRecordType() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "t" }; }
-NDEFRecordType NDEFRecordType::gcDataRecordType() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "d" }; }
+NDEFRecordType NDEFRecordType::text_record_type() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "T" }; }
+NDEFRecordType NDEFRecordType::uri_record_type() { return NDEFRecordType{ NDEFRecordType::TypeID::WellKnown, "U" }; }
+NDEFRecordType NDEFRecordType::invalid_record_type() { return NDEFRecordType{ NDEFRecordType::TypeID::Invalid }; }

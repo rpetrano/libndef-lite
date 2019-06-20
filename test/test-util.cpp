@@ -7,7 +7,7 @@
 using namespace util;
 using namespace std;
 
-TEST_CASE("popFront returns correct value (uint8_t)", "[popFrontUint8]")
+TEST_CASE("pop_front returns correct value (uint8_t)", "[pop_frontUint8]")
 {
   // Hard coding values woo yay...
   std::deque<uint8_t> values{ 0, 42, 24 };
@@ -16,15 +16,15 @@ TEST_CASE("popFront returns correct value (uint8_t)", "[popFrontUint8]")
   REQUIRE(values.size() == 3);
 
   // Pop front all values (3 times), confirming expected
-  REQUIRE(popFront(values) == 0);
-  REQUIRE(popFront(values) == 42);
-  REQUIRE(popFront(values) == 24);
+  REQUIRE(pop_front(values) == 0);
+  REQUIRE(pop_front(values) == 42);
+  REQUIRE(pop_front(values) == 24);
 
   // Ensure there are 0 values in the queue at the end
   REQUIRE(values.size() == 0);
 }
 
-TEST_CASE("popFront returns correct value (int32_t)", "[popFrontInt32]")
+TEST_CASE("pop_front returns correct value (int32_t)", "[pop_frontInt32]")
 {
   // Hard coding values woo yay...
   std::deque<int32_t> values{ 0, 42, 24 };
@@ -33,15 +33,15 @@ TEST_CASE("popFront returns correct value (int32_t)", "[popFrontInt32]")
   REQUIRE(values.size() == 3);
 
   // Pop front all values (3 times), confirming expected
-  REQUIRE(popFront(values) == 0);
-  REQUIRE(popFront(values) == 42);
-  REQUIRE(popFront(values) == 24);
+  REQUIRE(pop_front(values) == 0);
+  REQUIRE(pop_front(values) == 42);
+  REQUIRE(pop_front(values) == 24);
 
   // Ensure there are 0 values in the queue at the end
   REQUIRE(values.size() == 0);
 }
 
-TEST_CASE("drainDeque returns correct values (uint8_t)", "[drainDequeUint8]")
+TEST_CASE("drain_deque returns correct values (uint8_t)", "[drain_dequeUint8]")
 {
   // Hard coding values woo yay...
   deque<uint8_t> values{ 0, 42, 24 };
@@ -51,7 +51,7 @@ TEST_CASE("drainDeque returns correct values (uint8_t)", "[drainDequeUint8]")
   REQUIRE(values.size() == 3);
 
   // Drain all 3 values, expecting the returned vector to be equal
-  REQUIRE(drainDeque(values, 3) == expected);
+  REQUIRE(drain_deque(values, 3) == expected);
 
   // Ensure there are 0 values in the queue at the end
   REQUIRE(values.size() == 0);

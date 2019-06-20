@@ -56,7 +56,8 @@ TEST = $(BIN_DIR)/$(TARGET)_test
 
 all : $(EXEC)
 debug : $(DBG)
-test : $(TEST) runtests
+test : CXXFLAGS += -Itest/
+test : $(TEST)
 clean-light:
 	-$(shell find obj ! -name 'test-main.*' -type f -exec rm -f {} +)
 	-$(RM) -r $(EXEC) $(DBG) $(TEST) $(COV_DIR)

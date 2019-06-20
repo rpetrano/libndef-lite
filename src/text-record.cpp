@@ -17,7 +17,7 @@ vector<uint8_t> NDEFRecord::init_text_record_payload(const vector<uint8_t>& text
   payload.reserve(1 + locale_length + textBytes.size());
 
   // Set type as Text Well Known Type
-  record.set_type(NDEFRecordType::textRecordType());
+  record.set_type(NDEFRecordType::text_record_type());
 
   // Combine codec encoding (bit 7) and locale length (bits 5..0) for first byte
   uint8_t statusByte = 0x00 | (static_cast<uint8_t>(codec) & 0x80) | (locale_length & 0x3f);
@@ -43,7 +43,7 @@ NDEFRecord NDEFRecord::create_text_record(const string& text, const string& loca
   vector<uint8_t> payload = init_text_record_payload(text, locale, codec);
 
   // Set type as Text Well Known Type
-  record.set_type(NDEFRecordType::textRecordType());
+  record.set_type(NDEFRecordType::text_record_type());
 
   // Add text to payload
   payload.insert(payload.end(), text.begin(), text.end());
