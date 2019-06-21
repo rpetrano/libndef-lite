@@ -7,34 +7,16 @@ using namespace std;
 
 namespace encoding {
 
+// In theory, this union and system_endianness/all calls to it should be optimized away at compile-time.
+// I haven't checked to confirm this
+constexpr union {
+  uint32_t i;
+  uint8_t c[4];
+} endian_int = { 0x01020304 };
+
 /// Detects and returns the endianness of the system executing on
 /// \note should be optimized away at compile time, since this result will always be the same
-Endian system_endianness()
-{
-  const union {
-    uint32_t i;
-    uint8_t c[4];
-  } endian_int = { 0x01020304 };
-
-  return (endian_int.c[0] == 0x01) ? Endian::LittleEndian : Endian::BigEndian;
-}
-
-/// Handles swapping of bytes in-place in vector, indicating success
-/// \note Wrapper around std::swap with additional check that number of elements is even
-bool swap_bytes(vector<uint8_t>& to_swap)
-{
-  // Even number of bytes required
-  if ((to_swap.size() % 2) != 0) {
-    return false;
-  }
-
-  // Swap order of bytes in-place
-  for (size_t i = 0; i < to_swap.size(); i += 2) {
-    swap(to_swap.at(i), to_swap.at(i - 1));
-  }
-
-  return true;
-}
+constexpr Endian system_endianness() { return (endian_int.c[0] == 0x01) ? Endian::BigEndian : Endian::LittleEndian; }
 
 /// Converts string to UTF-8 string
 /// \note This doesn't do anything, as string is already either UTF-8 or ASCII
@@ -75,14 +57,23 @@ u16string to_utf16(const vector<uint8_t>& src)
 vector<uint8_t> to_utf16_bytes(const u16string& src, const Endian& endian)
 {
   // Create byte vector from u16string contents, no adjustment
-  vector<uint8_t> bytes{ src.begin(), src.end() };
+  vector<uint8_t> bytes;
+  const bool endian_match = (system_endianness() == endian);
 
-  // System endianness does not matches endianness desired, swap order of bytes
-  if (system_endianness() != endian) {
-    if (!swap_bytes(bytes)) {
-      // Endian swap failed, return empty vector
-      return std::vector<uint8_t>{};
-    }
+  for (auto&& byte : src) {
+    /* If the system endianness doesn't match the desired output endianness then the byte order must be reversed.
+     *
+     * Eg. If on a little endian system and big endian is wanted the bytes must be switched:
+     * the first 8 bits (byte) put on the array will be the high 8 bytes in the char16_t shifted 8 places, then the
+     * second 8 bits (byte) will be the low 8
+     *
+     * Little endian char16_t: 0xabcd => Big endian uint8_t[2]: { 0xcd, 0xab }
+     */
+    const uint shift_first = (endian_match) ? 8 : 0;
+    const uint shift_second = (endian_match) ? 0 : 8;
+
+    bytes.push_back(static_cast<uint8_t>(byte >> shift_first));
+    bytes.push_back(static_cast<uint8_t>(byte >> shift_second));
   }
 
   return bytes;

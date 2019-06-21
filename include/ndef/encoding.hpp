@@ -12,11 +12,7 @@ const uint8_t BOM_BE_2ND = '\xfe';
 enum class Endian { BigEndian, LittleEndian };
 
 /// \return Endian variant indicating system endiannes
-Endian system_endianness();
-
-/// \param to_swap vector of bytes to be swapped
-/// \return boolean indicating success of swap
-bool swap_bytes(std::vector<uint8_t>& to_swap);
+constexpr Endian system_endianness();
 
 /// \param src std::string source to convert
 /// \return std::string encoded in UTF-8
