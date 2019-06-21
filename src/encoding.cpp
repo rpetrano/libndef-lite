@@ -7,8 +7,34 @@ using namespace std;
 
 namespace encoding {
 
-const uint8_t BOM_BE_1ST = '\xff';
-const uint8_t BOM_BE_2ND = '\xfe';
+/// Detects and returns the endianness of the system executing on
+/// \note should be optimized away at compile time, since this result will always be the same
+Endian system_endianness()
+{
+  const union {
+    uint32_t i;
+    uint8_t c[4];
+  } endian_int = { 0x01020304 };
+
+  return (endian_int.c[0] == 0x01) ? Endian::LittleEndian : Endian::BigEndian;
+}
+
+/// Handles swapping of bytes in-place in vector, indicating success
+/// \note Wrapper around std::swap with additional check that number of elements is even
+bool swap_bytes(vector<uint8_t>& to_swap)
+{
+  // Even number of bytes required
+  if ((to_swap.size() % 2) != 0) {
+    return false;
+  }
+
+  // Swap order of bytes in-place
+  for (size_t i = 0; i < to_swap.size(); i += 2) {
+    swap(to_swap.at(i), to_swap.at(i - 1));
+  }
+
+  return true;
+}
 
 /// Converts string to UTF-8 string
 /// \note This doesn't do anything, as string is already either UTF-8 or ASCII
@@ -45,16 +71,30 @@ u16string to_utf16(const vector<uint8_t>& src)
   return conv.from_bytes(string{ src.begin(), src.end() });
 }
 
-/// Converts UTF-16 string (u16string) to vector of uint8_t in Little Endian order
-vector<uint8_t> to_utf16le_bytes(const u16string& src)
+/// Converts std::u16string to array of bytes in specified endianness
+vector<uint8_t> to_utf16_bytes(const u16string& src, const Endian& endian)
 {
-  using namespace std;
+  // Create byte vector from u16string contents, no adjustment
+  vector<uint8_t> bytes{ src.begin(), src.end() };
 
-  // Convert u16string
-  wstring_convert<codecvt_utf8_utf16<char16_t, 0x10ffff, codecvt_mode::little_endian>, char16_t> conv;
-  auto bytes = conv.to_bytes(src);
-  return vector<uint8_t>{ bytes.begin(), bytes.end() };
+  // System endianness does not matches endianness desired, swap order of bytes
+  if (system_endianness() != endian) {
+    if (!swap_bytes(bytes)) {
+      // Endian swap failed, return empty vector
+      return std::vector<uint8_t>{};
+    }
+  }
+
+  return bytes;
 }
+
+/// Converts UTF-16 string (u16string) to vector of uint8_t in Little Endian order
+/// \note Wrapper around to_utf16_bytes, specifying Little Endian endianness
+vector<uint8_t> to_utf16le_bytes(const u16string& src) { return to_utf16_bytes(src, Endian::LittleEndian); }
+
+/// Converts UTF-16 string (u16string) to vector of uint8_t in Big Endian order
+/// \note Wrapper around to_utf16_bytes, specifying Big Endian endianness
+vector<uint8_t> to_utf16be_bytes(const u16string& src) { return to_utf16_bytes(src, Endian::BigEndian); }
 
 /// Checks for UTF Byte Order Mark in UTF-16 string
 bool has_BOM(const vector<uint8_t>& bytes)

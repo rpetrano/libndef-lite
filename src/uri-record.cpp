@@ -51,8 +51,8 @@ NDEFRecord NDEFRecord::create_uri_record(const std::string& uri)
   // Bytes that will be stored in record
   std::vector<uint8_t> payload;
 
-  // Attempt to match all URIs
-  for (size_t i = 0; i < num_identifiers; i++) {
+  // Attempt to match all URIs, skipping first one (0x00 = empty)
+  for (size_t i = 1; i < num_identifiers; i++) {
     auto prefix = uri_identifiers[i];
 
     // Skip any identifiers that are longer than the comparison URI
@@ -64,7 +64,7 @@ NDEFRecord NDEFRecord::create_uri_record(const std::string& uri)
     if (uri.rfind(prefix, 0) == 0) {
       // Add URI identifier code (position in list) and then add URI substring
       payload.emplace_back(i);
-      payload.insert(payload.begin(), uri.begin() + prefix.size(), uri.end());
+      payload.insert(payload.end(), uri.begin() + prefix.size(), uri.end());
       break;
     }
   }
@@ -86,4 +86,18 @@ std::string NDEFRecord::get_uri(const std::vector<uint8_t>& payload)
 {
   // Bytes are encoded in ASCII/UTF-8, just create a string from them
   return std::string{ payload.begin() + 1, payload.end() };
+}
+
+/// Gets string form of URI protocol from URI Record
+std::string NDEFRecord::get_uri_protocol() const
+{
+  // First byte in the payload represents the URI identifier, allowing us to simply return a string
+  return uri_identifiers[payload_data.at(0)];
+}
+
+/// Gets string form of actual URI from URI Record
+std::string NDEFRecord::get_uri() const
+{
+  // Bytes are encoded in ASCII/UTF-8, just create a string from them
+  return std::string{ payload_data.begin() + 1, payload_data.end() };
 }

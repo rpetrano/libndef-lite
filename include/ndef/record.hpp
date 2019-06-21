@@ -89,11 +89,17 @@ public:
 
   /// \param payload vector of bytes to have locale extracted from
   /// \return ASCII string representation of locale in payload
-  static std::string text_locale(const std::vector<uint8_t>& payload);
+  static std::string get_text_locale(const std::vector<uint8_t>& payload);
+
+  /// \return ASCII string representation of record's locale
+  std::string get_text_locale() const;
 
   /// \param payload vector of bytes to have locale extracted from
-  /// \return string UTF-8 encoded string of record's contents
-  static std::string text_from_text_payload(const std::vector<uint8_t>& payload);
+  /// \return UTF-8 encoded string of record in byte's contents
+  static std::string get_text(const std::vector<uint8_t>& payload);
+
+  /// \return UTF-8 encoded string of record's contents
+  std::string get_text() const;
 
   // URI Records
 
@@ -102,12 +108,18 @@ public:
   static NDEFRecord create_uri_record(const std::string& uri);
 
   /// \param payload vector of bytes to have URI protocol extracted from
-  /// \return string UTF-8 encoded string of record's URI protocol
+  /// \return UTF-8 encoded string of record in byte's URI protocol
   static std::string get_uri_protocol(const std::vector<uint8_t>& payload);
 
+  /// \return UTF-8 encoded string of record's URI protocol
+  std::string get_uri_protocol() const;
+
   /// \param payload vector of bytes to have URI extracted from
-  /// \return string UTF-8 encoded string of record's URI
+  /// \return UTF-8 encoded string of record in byte's URI
   static std::string get_uri(const std::vector<uint8_t>& payload);
+
+  /// \return UTF-8 encoded string of record's URI
+  std::string get_uri() const;
 
 private:
   // NDEF Record Fields

@@ -6,6 +6,18 @@
 #include <vector>
 
 namespace encoding {
+const uint8_t BOM_BE_1ST = '\xff';
+const uint8_t BOM_BE_2ND = '\xfe';
+
+enum class Endian { BigEndian, LittleEndian };
+
+/// \return Endian variant indicating system endiannes
+Endian system_endianness();
+
+/// \param to_swap vector of bytes to be swapped
+/// \return boolean indicating success of swap
+bool swap_bytes(std::vector<uint8_t>& to_swap);
+
 /// \param src std::string source to convert
 /// \return std::string encoded in UTF-8
 std::string to_utf8(const std::string& src);
@@ -27,8 +39,17 @@ std::u16string to_utf16(const std::u16string& src);
 std::u16string to_utf16(const std::vector<uint8_t>& src);
 
 /// \param src std::u16string source to convert
+/// \param endian Endian variant to convert to
+/// \return vector of bytes in order specified, or empty vector if the endian swap fails
+std::vector<uint8_t> to_utf16_bytes(const std::u16string& src, const Endian& endian = Endian::LittleEndian);
+
+/// \param src std::u16string source to convert
 /// \return std::vector<uint8_t> of UTF-16LE bytes
 std::vector<uint8_t> to_utf16le_bytes(const std::u16string& src);
+
+/// \param src std::u16string source to convert
+/// \return std::vector<uint8_t> of UTF-16BE bytes
+std::vector<uint8_t> to_utf16be_bytes(const std::u16string& src);
 
 /// \param src byte vector source to convert
 /// \return std::u16string of text

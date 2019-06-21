@@ -52,13 +52,13 @@ EXEC = $(BIN_DIR)/$(TARGET)
 DBG  = $(BIN_DIR)/$(TARGET)_dbg
 TEST = $(BIN_DIR)/$(TARGET)_test
 
-.PHONY: all clean debug test doc runtests coverage clean-light
+.PHONY: all clean debug test doc runtests coverage partial-clean
 
 all : $(EXEC)
 debug : $(DBG)
 test : CXXFLAGS += -Itest/
 test : $(TEST)
-clean-light:
+partial-clean:
 	-$(shell find obj ! -name 'test-main.*' -type f -exec rm -f {} +)
 	-$(RM) -r $(EXEC) $(DBG) $(TEST) $(COV_DIR)
 	@echo "Cleaned all binaries and object files (ignored test-main)"

@@ -69,20 +69,43 @@ NDEFRecord NDEFRecord::create_text_record(const u16string& text, const string& l
   return record;
 }
 
-/// Extracts the text locale in string form from the payload vector passed
-string NDEFRecord::text_locale(const vector<uint8_t>& payload)
+/// Extracts the text locale in string from the payload vector passed
+string NDEFRecord::get_text_locale(const vector<uint8_t>& payload)
 {
   // Get the length of the locale string from the payload - max 5 characters
-  const uint localeLength = min((payload.at(0) & 0x1f), 5);
-  return string{ payload.begin() + 1, payload.begin() + 1 + localeLength };
+  const uint locale_length = min((payload.at(0) & 0x1f), 5);
+  return string{ payload.begin() + 1, payload.begin() + 1 + locale_length };
 }
 
-/// Extracts stored text from record
-string NDEFRecord::text_from_text_payload(const vector<uint8_t>& payload)
+/// Extracts stored text from the payload vector passed
+string NDEFRecord::get_text(const vector<uint8_t>& payload)
 {
   const uint status_byte = payload.at(0);
   const uint locale_length = status_byte & 0x1f;
   vector<uint8_t> record_bytes{ payload.begin() + 1 + locale_length, payload.end() };
+
+  // Convert to UTF-8 string, handling UTF-16 if need be
+  if (status_byte & static_cast<uint8_t>(RecordTextCodec::UTF16)) {
+    return encoding::to_utf8(encoding::to_utf16(record_bytes));
+  } else {
+    return std::string{ record_bytes.begin(), record_bytes.end() };
+  }
+}
+
+/// Extracts the text locale in string from the record object
+string NDEFRecord::get_text_locale() const
+{
+  // Get the length of the locale string from the payload - max 5 characters
+  const uint locale_length = min((this->payload_data.at(0) & 0x1f), 5);
+  return string{ this->payload_data.begin() + 1, this->payload_data.begin() + 1 + locale_length };
+}
+
+/// Extracts stored text from record
+string NDEFRecord::get_text() const
+{
+  const uint status_byte = this->payload_data.at(0);
+  const uint locale_length = status_byte & 0x1f;
+  vector<uint8_t> record_bytes{ this->payload_data.begin() + 1 + locale_length, this->payload_data.end() };
 
   // Convert to UTF-8 string, handling UTF-16 if need be
   if (status_byte & static_cast<uint8_t>(RecordTextCodec::UTF16)) {
