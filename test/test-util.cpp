@@ -1,13 +1,13 @@
 #include <deque>
 #include <vector>
 
-#include "catch.hpp"
-#include "ndef/util.hpp"
+#include "doctest.hpp"
+#include "ndef-lite/util.hpp"
 
 using namespace util;
 using namespace std;
 
-TEST_CASE("pop_front returns correct value (uint8_t)", "[pop_frontUint8]")
+TEST_CASE("pop_front returns correct value (uint8_t)")
 {
   // Hard coding values woo yay...
   std::deque<uint8_t> values{ 0, 42, 24 };
@@ -24,7 +24,7 @@ TEST_CASE("pop_front returns correct value (uint8_t)", "[pop_frontUint8]")
   REQUIRE(values.size() == 0);
 }
 
-TEST_CASE("pop_front returns correct value (int32_t)", "[pop_frontInt32]")
+TEST_CASE("pop_front returns correct value (int32_t)")
 {
   // Hard coding values woo yay...
   std::deque<int32_t> values{ 0, 42, 24 };
@@ -41,7 +41,7 @@ TEST_CASE("pop_front returns correct value (int32_t)", "[pop_frontInt32]")
   REQUIRE(values.size() == 0);
 }
 
-TEST_CASE("drain_deque returns correct values (uint8_t)", "[drain_dequeUint8]")
+TEST_CASE("drain_deque returns correct values (uint8_t)")
 {
   // Hard coding values woo yay...
   deque<uint8_t> values{ 0, 42, 24 };
@@ -57,7 +57,7 @@ TEST_CASE("drain_deque returns correct values (uint8_t)", "[drain_dequeUint8]")
   REQUIRE(values.size() == 0);
 }
 
-TEST_CASE("uint32FromBEBytes creates appropriate uint32 value from 4 byte array", "[uint32FromBEBytes]")
+TEST_CASE("uint32FromBEBytes creates appropriate uint32 value from 4 byte array")
 {
   uint8_t values[4]{ 0x42, 0x24, 0x00, 0x00 };
   uint32_t expectedVal = 0x42240000;
@@ -67,38 +67,38 @@ TEST_CASE("uint32FromBEBytes creates appropriate uint32 value from 4 byte array"
   REQUIRE(converted == expectedVal);
 }
 
-TEST_CASE("assertHasValues no throw, number of elements in deque > n", "[assertHasValuesPassGT]")
+TEST_CASE("assertHasValues no throw, number of elements in deque > n")
 {
   deque<uint8_t> values{ 0, 42, 24 };
   REQUIRE_NOTHROW(assertHasValues(values, 2, "unit test"));
 }
 
-TEST_CASE("assertHasValues no throw, number of elements in deque == n", "[assertHasValuesPassEQ]")
+TEST_CASE("assertHasValues no throw, number of elements in deque == n")
 {
   deque<uint8_t> values{ 0, 42, 24 };
   REQUIRE_NOTHROW(assertHasValues(values, 3, "unit test"));
 }
 
-TEST_CASE("assertHasValues throws NDEFException, number of elements in deque < n", "[assertHasValuesThrow]")
+TEST_CASE("assertHasValues throws NDEFException, number of elements in deque < n")
 {
   deque<uint8_t> values{ 0, 42, 24 };
   REQUIRE_THROWS_WITH(assertHasValues(values, 4, "unit test"),
                       "Too few elements in queue for unit test field: require 4 have 3");
 }
 
-TEST_CASE("assertHasValue no throw, number of elements in deque > 1", "[assertHasValuePassGT]")
+TEST_CASE("assertHasValue no throw, number of elements in deque > 1")
 {
   deque<uint8_t> values{ 0, 42, 24 };
   REQUIRE_NOTHROW(assertHasValue(values, "unit test"));
 }
 
-TEST_CASE("assertHasValue no throw, number of elements in deque == n", "[assertHasValuePassEQ]")
+TEST_CASE("assertHasValue no throw, number of elements in deque == n")
 {
   deque<uint8_t> values{ 0, 42, 24 };
   REQUIRE_NOTHROW(assertHasValue(values, "unit test"));
 }
 
-TEST_CASE("assertHasValue throws NDEFException, empty deque", "[assertHasValueThrowEmpty]")
+TEST_CASE("assertHasValue throws NDEFException, empty deque")
 {
   deque<uint8_t> values{};
   REQUIRE_THROWS_WITH(assertHasValue(values, "unit test"),

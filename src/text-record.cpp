@@ -1,5 +1,5 @@
-#include "ndef/encoding.hpp"
-#include "ndef/record.hpp"
+#include "ndef-lite/encoding.hpp"
+#include "ndef-lite/record.hpp"
 
 using namespace std;
 

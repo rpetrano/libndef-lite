@@ -1,13 +1,13 @@
-#include "catch.hpp"
+#include "doctest.hpp"
 #include "test-constants.hpp"
 
-#include "ndef/record-header.hpp"
-#include "ndef/record.hpp"
-#include "ndef/util.hpp"
+#include "ndef-lite/record-header.hpp"
+#include "ndef-lite/record.hpp"
+#include "ndef-lite/util.hpp"
 
 using namespace std;
 
-TEST_CASE("Create valid short NDEF Record from known valid bytes array", "[ndefFromBytesArrayValidText]")
+TEST_CASE("Create valid short NDEF Record from known valid bytes array")
 {
   uint8_t data_array[valid_text_record_bytes_sr.size()];
   std::copy(valid_text_record_bytes_sr.begin(), valid_text_record_bytes_sr.end(), data_array);
@@ -43,7 +43,7 @@ TEST_CASE("Create valid short NDEF Record from known valid bytes array", "[ndefF
   REQUIRE(text_payload == "Hello, World!");
 }
 
-TEST_CASE("Create valid short NDEF Record from known valid bytes", "[ndefFromBytesValidText]")
+TEST_CASE("Create valid short NDEF Record from known valid bytes")
 {
   NDEFRecord record = NDEFRecord::from_bytes(valid_text_record_bytes_sr);
 
@@ -76,7 +76,7 @@ TEST_CASE("Create valid short NDEF Record from known valid bytes", "[ndefFromByt
   REQUIRE(text_payload == "Hello, World!");
 }
 
-TEST_CASE("Valid short NDEF Record returns valid bytes", "[bytesFromRecord]")
+TEST_CASE("Valid short NDEF Record returns valid bytes")
 {
   using namespace util;
 
@@ -92,7 +92,7 @@ TEST_CASE("Valid short NDEF Record returns valid bytes", "[bytesFromRecord]")
   }
 }
 
-TEST_CASE("Valid non-short NDEF Record from known valid bytes array", "[ndefLongFromBytesValidText]")
+TEST_CASE("Valid non-short NDEF Record from known valid bytes array")
 {
   NDEFRecord record = NDEFRecord::from_bytes(valid_text_record_bytes_nosr);
 
@@ -125,7 +125,7 @@ TEST_CASE("Valid non-short NDEF Record from known valid bytes array", "[ndefLong
   REQUIRE(text_payload == rand_string_257);
 }
 
-TEST_CASE("Valid short NDEF Record from known valid bytes array", "[ndefSRFromBytesValidText]")
+TEST_CASE("Valid short NDEF Record from known valid bytes array")
 {
   NDEFRecord record = NDEFRecord::from_bytes(valid_text_record_bytes_sr);
 
@@ -158,14 +158,14 @@ TEST_CASE("Valid short NDEF Record from known valid bytes array", "[ndefSRFromBy
   REQUIRE(text_payload == "Hello, World!");
 }
 
-TEST_CASE("Too few source bytes throws NDEFException", "[subMinRecordSourceBytesThrows]")
+TEST_CASE("Too few source bytes throws NDEFException")
 {
   std::vector<uint8_t> short_bytes{ 0x10, 0xc0 };
 
   REQUIRE_THROWS_WITH(NDEFRecord::from_bytes(short_bytes), "Invalid number of octets, must have at least 4");
 }
 
-TEST_CASE("Valid NDEF Record returns correct ID", "[validRecordCorrectID]")
+TEST_CASE("Valid NDEF Record returns correct ID")
 {
   auto test_bytes = valid_text_record_bytes_sr_id;
 
@@ -200,7 +200,7 @@ TEST_CASE("Valid NDEF Record returns correct ID", "[validRecordCorrectID]")
   REQUIRE(text_payload == "Hello, World!");
 }
 
-TEST_CASE("Non-ASCII character in type field throws", "[nonASCIITypeFieldThrows]")
+TEST_CASE("Non-ASCII character in type field throws")
 {
   auto test_bytes = valid_text_record_bytes_sr;
 
@@ -210,7 +210,7 @@ TEST_CASE("Non-ASCII character in type field throws", "[nonASCIITypeFieldThrows]
   REQUIRE_THROWS_WITH(NDEFRecord::from_bytes(test_bytes), "Invalid character code 31 found in type field");
 }
 
-TEST_CASE("Non-ASCII character in type field throws during marshalling to bytes", "[nonASCIITypeFieldThrowsToBytes]")
+TEST_CASE("Non-ASCII character in type field throws during marshalling to bytes")
 {
   auto record = NDEFRecord::from_bytes(valid_text_record_bytes_sr);
 
@@ -220,7 +220,7 @@ TEST_CASE("Non-ASCII character in type field throws during marshalling to bytes"
   REQUIRE_THROWS_WITH(record.as_bytes(), "Invalid type field character with code 31");
 }
 
-TEST_CASE("Valid non-short NDEF Record returns correct bytes", "[bytesFromLongRecord]")
+TEST_CASE("Valid non-short NDEF Record returns correct bytes")
 {
   using namespace util;
 
@@ -236,7 +236,7 @@ TEST_CASE("Valid non-short NDEF Record returns correct bytes", "[bytesFromLongRe
   }
 }
 
-TEST_CASE("Valid NDEF Record with ID field return correct bytes", "[bytesWithIDFromRecord]")
+TEST_CASE("Valid NDEF Record with ID field return correct bytes")
 {
   using namespace util;
 
@@ -254,7 +254,7 @@ TEST_CASE("Valid NDEF Record with ID field return correct bytes", "[bytesWithIDF
   }
 }
 
-TEST_CASE("NDEF Record with Empty type and payload data doesn't validate", "[emptyTypeAndSomeDataFailValidate]")
+TEST_CASE("NDEF Record with Empty type and payload data doesn't validate")
 {
   // Defaults to type ID Empty and empty payload
   NDEFRecord record;

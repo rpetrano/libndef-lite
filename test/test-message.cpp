@@ -1,12 +1,12 @@
 #include <vector>
 
-#include "catch.hpp"
+#include "doctest.hpp"
 #include "test-constants.hpp"
 
-#include "ndef/message.hpp"
-#include "ndef/record.hpp"
+#include "ndef-lite/message.hpp"
+#include "ndef-lite/record.hpp"
 
-TEST_CASE("NDEF Message insert past end throws out_of_range", "messageInsertPastEndThrows")
+TEST_CASE("NDEF Message insert past end throws out_of_range")
 {
   NDEFMessage message;
   NDEFRecord record;
@@ -15,7 +15,7 @@ TEST_CASE("NDEF Message insert past end throws out_of_range", "messageInsertPast
   REQUIRE_THROWS_WITH(message.insert_record(record, 1), "Unable to insert record. Index 1 outside of range of message");
 }
 
-TEST_CASE("NDEF Message insert not past end does not throw", "messageInsertValidDoesNotThrow")
+TEST_CASE("NDEF Message insert not past end does not throw")
 {
   NDEFMessage message;
   NDEFRecord record;
@@ -24,7 +24,7 @@ TEST_CASE("NDEF Message insert not past end does not throw", "messageInsertValid
   REQUIRE_NOTHROW(message.insert_record(record, 0));
 }
 
-TEST_CASE("NDEF Message remove at valid location (populated)", "messageRemoveNoThrow-populated")
+TEST_CASE("NDEF Message remove at valid location (populated)")
 {
   // Prepare message with single record
   NDEFMessage message{ NDEFRecord{} };
@@ -32,7 +32,7 @@ TEST_CASE("NDEF Message remove at valid location (populated)", "messageRemoveNoT
   REQUIRE_NOTHROW(message.remove_record(0));
 }
 
-TEST_CASE("NDEF Message remove past end (empty) throws out_of_range", "messageRemovePastEndThrows-empty")
+TEST_CASE("NDEF Message remove past end (empty) throws out_of_range")
 {
   NDEFMessage message;
 
@@ -40,7 +40,7 @@ TEST_CASE("NDEF Message remove past end (empty) throws out_of_range", "messageRe
   REQUIRE_THROWS_WITH(message.remove_record(0), "Unable to remove record. Index 0 outside of range of message");
 }
 
-TEST_CASE("NDEF Message remove past end (populated) throws out_of_range", "messageRemovePastEndThrows-populated")
+TEST_CASE("NDEF Message remove past end (populated) throws out_of_range")
 {
   // Prepare message with single record
   NDEFMessage message{ NDEFRecord{} };
@@ -49,7 +49,7 @@ TEST_CASE("NDEF Message remove past end (populated) throws out_of_range", "messa
   REQUIRE_THROWS_WITH(message.remove_record(1), "Unable to remove record. Index 1 outside of range of message");
 }
 
-TEST_CASE("NDEF Message set past end (empty) throws out_of_range", "messageSetPastEndThrows-empty")
+TEST_CASE("NDEF Message set past end (empty) throws out_of_range")
 {
   NDEFMessage message;
   NDEFRecord record;
@@ -58,7 +58,7 @@ TEST_CASE("NDEF Message set past end (empty) throws out_of_range", "messageSetPa
   REQUIRE_THROWS_WITH(message.set_record(record, 1), "Unable to set record. Index 1 outside of range of message");
 }
 
-TEST_CASE("NDEF Message set past end (populated) throws out_of_range", "messageSetPastEndThrows-populated")
+TEST_CASE("NDEF Message set past end (populated) throws out_of_range")
 {
   // Prepare message with single record
   NDEFMessage message{ NDEFRecord{} };
@@ -68,7 +68,7 @@ TEST_CASE("NDEF Message set past end (populated) throws out_of_range", "messageS
   REQUIRE_THROWS_WITH(message.set_record(record, 1), "Unable to set record. Index 1 outside of range of message");
 }
 
-TEST_CASE("NDEF Message valid set (empty)", "messageSetValid")
+TEST_CASE("NDEF Message valid set (empty)")
 {
   // Prepare message with single record
   NDEFMessage message{ NDEFRecord{} };
@@ -77,14 +77,14 @@ TEST_CASE("NDEF Message valid set (empty)", "messageSetValid")
   REQUIRE_NOTHROW(message.set_record(record, 0));
 }
 
-TEST_CASE("Empty message invalid", "[emptyMessageInvalid]")
+TEST_CASE("Empty message invalid")
 {
   NDEFMessage message;
 
   REQUIRE_FALSE(message.is_valid());
 }
 
-TEST_CASE("Populated NDEF Message is valid", "[popMessageValid]")
+TEST_CASE("Populated NDEF Message is valid")
 {
   auto valid_record = NDEFRecord::from_bytes(valid_text_record_bytes_sr);
   NDEFMessage msg{ valid_record };
@@ -92,14 +92,14 @@ TEST_CASE("Populated NDEF Message is valid", "[popMessageValid]")
   REQUIRE(msg.is_valid());
 }
 
-TEST_CASE("Valid NDEF Message from valid bytes", "[validMsgFromBytes]")
+TEST_CASE("Valid NDEF Message from valid bytes")
 {
   auto msg = NDEFMessage::from_bytes(valid_text_record_bytes_sr);
 
   REQUIRE(msg.is_valid());
 }
 
-TEST_CASE("Valid NDEF Message from multiple valid record bytes", "[validMsgFromMultipleRecordBytes]")
+TEST_CASE("Valid NDEF Message from multiple valid record bytes")
 {
   auto msg_bytes = valid_text_record_bytes_sr;
   msg_bytes.insert(msg_bytes.end(), valid_text_record_bytes_sr.begin(), valid_text_record_bytes_sr.end());
@@ -108,7 +108,7 @@ TEST_CASE("Valid NDEF Message from multiple valid record bytes", "[validMsgFromM
   REQUIRE(msg.is_valid());
 }
 
-TEST_CASE("Invalid NDEF Message from mixed validity record bytes", "[invalidMsgFromMultipleRecordBytes]")
+TEST_CASE("Invalid NDEF Message from mixed validity record bytes")
 {
   auto msg_bytes = valid_text_record_bytes_sr;
   msg_bytes.insert(msg_bytes.end(), invalid_record_bytes.begin(), invalid_record_bytes.end());
@@ -117,7 +117,7 @@ TEST_CASE("Invalid NDEF Message from mixed validity record bytes", "[invalidMsgF
   REQUIRE(msg.is_valid());
 }
 
-TEST_CASE("Expected byte sequence from valid bytes", "[validMsgBytes]")
+TEST_CASE("Expected byte sequence from valid bytes")
 {
   auto valid_record = NDEFRecord::from_bytes(valid_text_record_bytes_sr);
   auto msg = NDEFMessage{ valid_record };
@@ -126,7 +126,7 @@ TEST_CASE("Expected byte sequence from valid bytes", "[validMsgBytes]")
   REQUIRE(msg.as_bytes() == valid_text_record_bytes_sr);
 }
 
-TEST_CASE("Expected byte sequence from multiple valid bytes", "[validMsgBytes-multipleRecords]")
+TEST_CASE("Expected byte sequence from multiple valid bytes")
 {
   auto expected_bytes = valid_text_record_bytes_sr;
   expected_bytes.insert(expected_bytes.end(), valid_text_record_bytes_sr.begin(), valid_text_record_bytes_sr.end());
@@ -137,8 +137,7 @@ TEST_CASE("Expected byte sequence from multiple valid bytes", "[validMsgBytes-mu
   REQUIRE(msg.as_bytes() == valid_text_record_bytes_sr);
 }
 
-TEST_CASE("Expected byte sequence from mixed validity bytes - invalid first",
-          "[validMsgBytes-mixedRecords-invalidFirst]")
+TEST_CASE("Expected byte sequence from mixed validity bytes - invalid first")
 {
   auto expected_bytes = valid_text_record_bytes_sr;
   expected_bytes.insert(expected_bytes.end(), invalid_record_bytes.begin(), invalid_record_bytes.end());
@@ -153,7 +152,7 @@ TEST_CASE("Expected byte sequence from mixed validity bytes - invalid first",
   REQUIRE(msg.as_bytes().empty());
 }
 
-TEST_CASE("Expected byte sequence from mixed validity bytes - valid first", "[validMsgBytes-mixedRecords-validFirst]")
+TEST_CASE("Expected byte sequence from mixed validity bytes - valid first")
 {
   auto expected_bytes = valid_text_record_bytes_sr;
   expected_bytes.insert(expected_bytes.end(), invalid_record_bytes.begin(), invalid_record_bytes.end());
@@ -168,7 +167,7 @@ TEST_CASE("Expected byte sequence from mixed validity bytes - valid first", "[va
 }
 
 // Constructor tests
-TEST_CASE("Valid NDEF Message from data bytes and type, no offset", "[validMsgFromBytesAndType]")
+TEST_CASE("Valid NDEF Message from data bytes and type, no offset")
 {
   auto type = NDEFRecordType::text_record_type();
 
@@ -177,7 +176,7 @@ TEST_CASE("Valid NDEF Message from data bytes and type, no offset", "[validMsgFr
   REQUIRE(msg.is_valid());
 }
 
-TEST_CASE("Invalid NDEF Message from data bytes and Invalid type, no offset", "[invalidMsgFromBytesAndInvalidType]")
+TEST_CASE("Invalid NDEF Message from data bytes and Invalid type, no offset")
 {
   auto type_id = NDEFRecordType::TypeID::Invalid;
   NDEFRecordType type{ type_id };
@@ -187,7 +186,7 @@ TEST_CASE("Invalid NDEF Message from data bytes and Invalid type, no offset", "[
   REQUIRE_FALSE(msg.is_valid());
 }
 
-TEST_CASE("Invalid NDEF Message from invalid data bytes, no offset", "[invalidMsgFromRecordList]")
+TEST_CASE("Invalid NDEF Message from invalid data bytes, no offset")
 {
   auto invalid_record = NDEFRecord::from_bytes(invalid_record_bytes);
 
@@ -198,7 +197,7 @@ TEST_CASE("Invalid NDEF Message from invalid data bytes, no offset", "[invalidMs
   REQUIRE_FALSE(msg.is_valid());
 }
 
-TEST_CASE("Valid NDEF Message from single record list", "[validMsgFromSingleRecordList]")
+TEST_CASE("Valid NDEF Message from single record list")
 {
   NDEFRecordList records{ NDEFRecord{} };
   NDEFMessage msg{ records };
@@ -206,8 +205,7 @@ TEST_CASE("Valid NDEF Message from single record list", "[validMsgFromSingleReco
   REQUIRE(msg.is_valid());
 }
 
-TEST_CASE("Invalid NDEF Message from list with single invalid Record, no offset",
-          "[invalidMsgFromSingleInvalidRecordList]")
+TEST_CASE("Invalid NDEF Message from list with single invalid Record, no offset")
 {
   NDEFRecordList invalid_records{ NDEFRecord::from_bytes(invalid_record_bytes),
                                   NDEFRecord::from_bytes(invalid_record_bytes) };
@@ -217,7 +215,7 @@ TEST_CASE("Invalid NDEF Message from list with single invalid Record, no offset"
   REQUIRE_FALSE(msg.is_valid());
 }
 
-TEST_CASE("Invalid NDEF Message from multiple invalid data bytes, no offset", "[invalidMsgFromMixedValidityRecordList]")
+TEST_CASE("Invalid NDEF Message from multiple invalid data bytes, no offset")
 {
   NDEFRecordList mixed_records{ NDEFRecord::from_bytes(invalid_record_bytes),
                                 NDEFRecord::from_bytes(valid_text_record_bytes_sr) };

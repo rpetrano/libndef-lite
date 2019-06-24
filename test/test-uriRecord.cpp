@@ -1,11 +1,11 @@
-#include "catch.hpp"
+#include "doctest.hpp"
 #include "test-constants.hpp"
 
-#include "ndef/record.hpp"
+#include "ndef-lite/record.hpp"
 
 using namespace std;
 
-TEST_CASE("Initialize URI record payload", "[uri-initRecordPayload]")
+TEST_CASE("Initialize URI record payload")
 {
   string expected_protocol = "http://";
   string expected_uri = "testing123.com";
@@ -15,7 +15,7 @@ TEST_CASE("Initialize URI record payload", "[uri-initRecordPayload]")
   REQUIRE(record.get_uri_protocol() == expected_protocol);
 }
 
-TEST_CASE("Initialize short URI record payload", "[uri-initShortRecordPayload]")
+TEST_CASE("Initialize short URI record payload")
 {
   string expected_protocol = "ftp://";
   string expected_uri = "a.co";
@@ -25,14 +25,14 @@ TEST_CASE("Initialize short URI record payload", "[uri-initShortRecordPayload]")
   REQUIRE(record.get_uri_protocol() == expected_protocol);
 }
 
-TEST_CASE("URI Protocol from payload byte array", "[uri-protocolFromByteArray]")
+TEST_CASE("URI Protocol from payload byte array")
 {
   string expected_protocol = "https://www.";
 
   REQUIRE(NDEFRecord::get_uri_protocol(valid_https_prefix_uri_payload) == expected_protocol);
 }
 
-TEST_CASE("URI from payload byte array", "[uri-fromByteArray]")
+TEST_CASE("URI from payload byte array")
 {
   string expected_uri = "google.com";
 

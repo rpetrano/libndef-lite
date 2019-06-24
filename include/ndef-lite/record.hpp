@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "record-type.hpp"
-#include "util.hpp"
+#include "ndef-lite/record-type.hpp"
+#include "ndef-lite/util.hpp"
 
 // Default value for number of bytes argument during record creation
 // - required due to inability to use temporary values to be bound to non-const reference

@@ -1,6 +1,6 @@
-#include "ndef/message.hpp"
-#include "ndef/record-header.hpp"
-#include "ndef/record-type.hpp"
+#include "ndef-lite/message.hpp"
+#include "ndef-lite/record-header.hpp"
+#include "ndef-lite/record-type.hpp"
 
 using namespace std;
 

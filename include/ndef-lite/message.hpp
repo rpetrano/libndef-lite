@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-#include "ndef/record-type.hpp"
-#include "ndef/record.hpp"
+#include "ndef-lite/record-type.hpp"
+#include "ndef-lite/record.hpp"
 
 using NDEFRecordList = std::vector<NDEFRecord>;
 

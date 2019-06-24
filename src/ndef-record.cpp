@@ -65,11 +65,11 @@
 #include <locale>
 #include <string>
 
-#include "ndef/encoding.hpp"
-#include "ndef/exceptions.hpp"
-#include "ndef/record-header.hpp"
-#include "ndef/record.hpp"
-#include "ndef/util.hpp"
+#include "ndef-lite/encoding.hpp"
+#include "ndef-lite/exceptions.hpp"
+#include "ndef-lite/record-header.hpp"
+#include "ndef-lite/record.hpp"
+#include "ndef-lite/util.hpp"
 
 #define BOM_BE_1ST static_cast<char>('\xef')
 #define BOM_LE_2ND static_cast<char>('\xff')

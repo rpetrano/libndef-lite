@@ -1,14 +1,14 @@
 #include <string>
 #include <vector>
 
-#include "catch.hpp"
+#include "doctest.hpp"
 #include "test-constants.hpp"
 
-#include "ndef/record.hpp"
+#include "ndef-lite/record.hpp"
 
 using namespace std;
 
-TEST_CASE("Initialize text record payload", "[text-initRecordPayload]")
+TEST_CASE("Initialize text record payload")
 {
   string expected_payload = "testing123";
   string expected_locale = "en-US";
@@ -18,14 +18,14 @@ TEST_CASE("Initialize text record payload", "[text-initRecordPayload]")
   REQUIRE(record.get_text_locale() == expected_locale);
 }
 
-TEST_CASE("Text from payload byte array", "[text-fromByteArray]")
+TEST_CASE("Text from payload byte array")
 {
   string expected = "Hello, World!";
 
   REQUIRE(NDEFRecord::get_text(valid_utf8_text_payload) == expected);
 }
 
-TEST_CASE("Text locale from byte array", "[text-localefromByteArray]")
+TEST_CASE("Text locale from byte array")
 {
   string expected_locale = "en-US";
 

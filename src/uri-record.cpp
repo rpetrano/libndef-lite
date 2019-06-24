@@ -1,4 +1,4 @@
-#include "ndef/record.hpp"
+#include "ndef-lite/record.hpp"
 
 // All valid URI identifiers
 const uint num_identifiers = 36;

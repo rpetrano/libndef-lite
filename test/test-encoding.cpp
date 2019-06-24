@@ -1,9 +1,9 @@
-#include "catch.hpp"
-#include "ndef/encoding.hpp"
+#include "doctest.hpp"
+#include "ndef-lite/encoding.hpp"
 
 using namespace std;
 
-TEST_CASE("std::string to_utf8(std::string)", "[encodingUTF8ToUTF8string]")
+TEST_CASE("std::string to_utf8(std::string)")
 {
   // Source and output should be exactly the same
   string source = "test123";
@@ -11,7 +11,7 @@ TEST_CASE("std::string to_utf8(std::string)", "[encodingUTF8ToUTF8string]")
   REQUIRE(encoding::to_utf8(source) == source);
 }
 
-TEST_CASE("std::string to_utf8(std::u16string) funky", "[encodingUTF16ToUTF8string-funky]")
+TEST_CASE("std::string to_utf8(std::u16string) funky")
 {
   // Source and output should be exactly the same
   u16string source = u"𐌄𐌈ﺕ";
@@ -20,7 +20,7 @@ TEST_CASE("std::string to_utf8(std::u16string) funky", "[encodingUTF16ToUTF8stri
   REQUIRE(encoding::to_utf8(source) == expected);
 }
 
-TEST_CASE("std::string to_utf8(std::u16string) english", "[encodingUTF16ToUTF8string-english]")
+TEST_CASE("std::string to_utf8(std::u16string) english")
 {
   // Source and output should be exactly the same
   u16string source = u"testing123";
@@ -29,7 +29,7 @@ TEST_CASE("std::string to_utf8(std::u16string) english", "[encodingUTF16ToUTF8st
   REQUIRE(encoding::to_utf8(source) == expected);
 }
 
-TEST_CASE("std::string to_utf16(std::string)", "[encodingUTF8ToUTF16string]")
+TEST_CASE("std::string to_utf16(std::string)")
 {
   // Source and output should be exactly the same
   string source = u8"𐌄𐌈ﺕ";
@@ -38,7 +38,7 @@ TEST_CASE("std::string to_utf16(std::string)", "[encodingUTF8ToUTF16string]")
   REQUIRE(encoding::to_utf16(source) == expected);
 }
 
-TEST_CASE("std::string to_utf16(std::u16string)", "[encodingUTF16ToUTF16string]")
+TEST_CASE("std::string to_utf16(std::u16string)")
 {
   // Source and output should be exactly the same
   u16string source = u"𐌄𐌈ﺕ";
@@ -47,7 +47,7 @@ TEST_CASE("std::string to_utf16(std::u16string)", "[encodingUTF16ToUTF16string]"
 }
 
 // NOTE: Disabled for now until we can sort out handling BOM appropriately
-// TEST_CASE("std::string to_utf16(std::vector<uint8_t> Big Endian)", "[encodingBEBytesToUTF16string]")
+// TEST_CASE("std::string to_utf16(std::vector<uint8_t> Big Endian)")
 // {
 //   vector<uint8_t> source{ 0xfe, 0xff, 0xf0, 0x90, 0x8a, 0x99 };
 //   u16string expected = u"𐊙";
@@ -62,7 +62,7 @@ TEST_CASE("std::string to_utf16(std::u16string)", "[encodingUTF16ToUTF16string]"
 //   REQUIRE(result == expected);
 // }
 
-TEST_CASE("std::string to_utf16(std::vector<uint8_t>) english", "[encodingBytesToUTF16string-english]")
+TEST_CASE("std::string to_utf16(std::vector<uint8_t>) english")
 {
   vector<uint8_t> source{ 0x74, 0x65, 0x73, 0x74 };
   u16string expected = u"test";
@@ -70,7 +70,7 @@ TEST_CASE("std::string to_utf16(std::vector<uint8_t>) english", "[encodingBytesT
   REQUIRE(encoding::to_utf16(source) == expected);
 }
 
-TEST_CASE("std::string to_utf16le_bytes(std::u16string)", "[encodingUTF16ToUTF16LE]")
+TEST_CASE("std::string to_utf16le_bytes(std::u16string)")
 {
   u16string source = u"㋛㊍";
   vector<uint8_t> expected{ 0xdb, 0x32, 0x8d, 0x32 };
@@ -79,7 +79,7 @@ TEST_CASE("std::string to_utf16le_bytes(std::u16string)", "[encodingUTF16ToUTF16
   REQUIRE(result == expected);
 }
 
-TEST_CASE("std::string to_utf16be_bytes(std::u16string)", "[encodingUTF16ToUTF16LE]")
+TEST_CASE("std::string to_utf16be_bytes(std::u16string)")
 {
   u16string source = u"㋛㊍";
   vector<uint8_t> expected{ 0x32, 0xdb, 0x32, 0x8d };
@@ -88,7 +88,7 @@ TEST_CASE("std::string to_utf16be_bytes(std::u16string)", "[encodingUTF16ToUTF16
   REQUIRE(result == expected);
 }
 
-TEST_CASE("UTF-16 string has BOM", "[utf16HasBOM]")
+TEST_CASE("UTF-16 string has BOM")
 {
   u16string source = u"testing123";
   source.insert(source.begin(), { 0xfe, 0xff });
@@ -96,14 +96,14 @@ TEST_CASE("UTF-16 string has BOM", "[utf16HasBOM]")
   REQUIRE(encoding::has_BOM(source));
 }
 
-TEST_CASE("UTF-16 string no BOM", "[utf16NoBOM]")
+TEST_CASE("UTF-16 string no BOM")
 {
   u16string source = u"testing123";
 
   REQUIRE_FALSE(encoding::has_BOM(source));
 }
 
-TEST_CASE("UTF-16 bytes no BOM", "[utf16BytesNoBOM]")
+TEST_CASE("UTF-16 bytes no BOM")
 {
   u16string src_text = u"testing123";
   vector<uint8_t> source{ src_text.begin(), src_text.end() };
@@ -111,7 +111,7 @@ TEST_CASE("UTF-16 bytes no BOM", "[utf16BytesNoBOM]")
   REQUIRE_FALSE(encoding::has_BOM(source));
 }
 
-TEST_CASE("UTF-16 bytes has BOM", "[utf16BytesHasBOM]")
+TEST_CASE("UTF-16 bytes has BOM")
 {
   u16string src_text = u"testing123";
   vector<uint8_t> source{ 0xff, 0xfe };

@@ -1,7 +1,7 @@
 #include <codecvt>
 #include <locale>
 
-#include "ndef/encoding.hpp"
+#include "ndef-lite/encoding.hpp"
 
 using namespace std;
 

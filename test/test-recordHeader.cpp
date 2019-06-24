@@ -1,7 +1,7 @@
-#include "catch.hpp"
-#include "ndef/record-header.hpp"
+#include "doctest.hpp"
+#include "ndef-lite/record-header.hpp"
 
-TEST_CASE("Simple Record Header", "[simpleRecordHeader]")
+TEST_CASE("Simple Record Header")
 {
   uint8_t newByte = 0xff;
   auto expected = NDEFRecordHeader{
@@ -17,7 +17,7 @@ TEST_CASE("Simple Record Header", "[simpleRecordHeader]")
   REQUIRE(expected == recordHeader);
 }
 
-TEST_CASE("Short Record header", "[shortRecordHeader]")
+TEST_CASE("Short Record header")
 {
   uint8_t newByte = 0xd1;
   auto expected = NDEFRecordHeader{
@@ -33,7 +33,7 @@ TEST_CASE("Short Record header", "[shortRecordHeader]")
   REQUIRE(expected == recordHeader);
 }
 
-TEST_CASE("Record Header to byte", "[headerAsByte]")
+TEST_CASE("Record Header to byte")
 {
   auto header = NDEFRecordHeader{
     .tnf = NDEFRecordType::TypeID::WellKnown,
