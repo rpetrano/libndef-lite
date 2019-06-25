@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13.4)
+cmake_minimum_required(VERSION 3.13)
 project(ndef-lite VERSION 0.0.1)
 
 enable_testing()
@@ -57,6 +57,6 @@ include(CTest)
 add_subdirectory(test)
 
 install(TARGETS ${PROJECT_NAME}
-    LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/build # ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/build/include/ndef-lite
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
