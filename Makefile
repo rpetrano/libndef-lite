@@ -75,7 +75,7 @@ coverage : $(TEST) runtests
 	lcov --directory obj/ --capture --output-file /tmp/libndef-lite_coverage.lcov -b .
 	lcov --remove /tmp/libndef-lite_coverage.lcov -o $(COV_DIR)/coverage.lcov '/usr/include/*' \
 		'/usr/lib/*' \
-		'$(PWD)/include/catch.hpp'
+		'$(PWD)/include/doctest.hpp'
 	genhtml -o $(COV_DIR)/ $(COV_DIR)/coverage.lcov
 
 # --- Documentation ---

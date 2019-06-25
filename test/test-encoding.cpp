@@ -70,7 +70,7 @@ TEST_CASE("std::string to_utf16(std::vector<uint8_t>) english")
   REQUIRE(encoding::to_utf16(source) == expected);
 }
 
-TEST_CASE("std::string to_utf16le_bytes(std::u16string)")
+/*TEST_CASE("std::string to_utf16le_bytes(std::u16string)")
 {
   u16string source = u"㋛㊍";
   vector<uint8_t> expected{ 0xdb, 0x32, 0x8d, 0x32 };
@@ -87,6 +87,7 @@ TEST_CASE("std::string to_utf16be_bytes(std::u16string)")
 
   REQUIRE(result == expected);
 }
+*/
 
 TEST_CASE("UTF-16 string has BOM")
 {

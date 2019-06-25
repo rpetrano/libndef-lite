@@ -75,9 +75,9 @@ int main() {
 
 ## Coverage and Tests
 
-This library is currently at 79.1% test coverage according to [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) as of 2019-06-20 17:05:01.
+This library is currently at 95.2% test coverage according to [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) as of 2019-06-25 15:30.
 
-Testing is done via the [Catch2 framework](https://github.com/catchorg/Catch2) and can be executed locally by running `make test`.
+Testing is done via the [doctest framework](https://github.com/onqtam/doctest) and can be executed locally by running `make test`.
 
 Coverage be checked locally by running `make coverage`.
 
