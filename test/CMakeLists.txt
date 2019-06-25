@@ -18,11 +18,16 @@ SET(TEST_SOURCES
 
 foreach(TEST ${TEST_SOURCES})
     # Strip off test prefix
-    string(REGEX MATCH "^.*/test-(.*)\\.[^.]*$" "" ${TEST})
+    string(REGEX MATCH "^.*/test-(.*)\\.[^.]*$" dummy ${TEST})
     set(testName ${CMAKE_MATCH_1})
 
     # Add individual test executables 
-    add_executable("${testName}" "${TEST}" $<TARGET_OBJECTS:test-main>)
+    add_executable("${testName}")
+    target_sources("${testName}"
+        PRIVATE
+            "${TEST}"
+            $<TARGET_OBJECTS:test-main>
+    )
     target_link_libraries(${testName} Doctest ndef-lite)
     add_test(NAME ${testName} COMMAND ${testName})
 endforeach()
