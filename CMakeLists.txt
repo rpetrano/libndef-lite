@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.13)
 project(ndef-lite VERSION 0.0.1)
 
-enable_testing()
+# Enable building tests by default
+option(NDEF_LITE__DISABLE_TESTS "If tests should be compiled or not" OFF)
 
 set(source_files
     ${CMAKE_CURRENT_SOURCE_DIR}/src/encoding.cpp
@@ -51,12 +52,15 @@ target_include_directories(${PROJECT_NAME}
 )
 
 include(GNUInstallDirs)
-include(CTest)
 
-# Handle automatic Catch2 testing
-add_subdirectory(test)
+if (NOT NDEF_LITE__DISABLE_TESTS)
+    # Handle automatic Catch2 testing
+    enable_testing()
+    include(CTest)
+    add_subdirectory(test)
+endif()
 
 install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ndef-lite
 )

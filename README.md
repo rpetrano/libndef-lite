@@ -17,30 +17,60 @@ More information about the NFC/NDEF standards through [the NFC Forum's website](
 
 ## Installation
 
-...yeah no clue currently :fire:
+This project is built using CMake, so installation is nice and easy. Run the following commands and you'll be all set!
+
+```bash
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
 
 ## Usage
+
+Once the library is installed you will import the functionality via `<ndef-lite/[component].hpp>` and compile with the `-lndef-lite` flag!
 
 ### Create NDEF Text Record and then serialize to byte array
 
 ```c++
+#include <iomanip>
+#include <iostream>
 #include <string>
 #include <vector>
 
-#include <ndef-lite/record.hpp>
 #include <ndef-lite/message.hpp>
+#include <ndef-lite/record.hpp>
 
-// Create the text record for the message 
-std::string message{"I'm sorry Dave, I'm afraid I can't do that."};
+int main() {
+    // Create the text record for the message
+    std::string message{"I'm sorry Dave, I'm afraid I can't do that."};
 
-// Create NDEF Message object
-NDEFMessage msg;
+    // Create NDEF Message object
+    NDEFMessage msg;
 
-// Record defaults to UTF-8 encoding, but UTF-16 is supported
-msg.append_record(NDEFRecord::create_text_record(message, "en-US"));
+    // Record defaults to UTF-8 encoding, but UTF-16 is supported
+    msg.append_record(NDEFRecord::create_text_record(message, "en-US"));
 
-// Serialize record
-std::vector<uint8_t> bytes = msg.to_bytes();
+    // Serialize record
+    std::vector<uint8_t> bytes = msg.as_bytes();
+
+    // Configure cout to show hex characters
+    std::cout << std::showbase << std::internal << std::setfill('0') << std::hex
+                << std::setw(4);
+
+    // Output raw bytes
+    std::cout << "NDEF Record in raw bytes form:\n";
+    for (uint &&val : bytes) {
+        std::cout << val;
+        std::cout << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Payload message [" << msg.record(0).get_text_locale() << "]:\n";
+    std::cout << NDEFRecord::get_text(msg.record(0).payload()) << std::endl;
+    return 0;
+}
 ```
 
 ## Coverage and Tests
