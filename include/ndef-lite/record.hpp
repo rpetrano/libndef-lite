@@ -13,7 +13,7 @@
 
 // Default value for number of bytes argument during record creation
 // - required due to inability to use temporary values to be bound to non-const reference
-static size_t bytes_used = 0;
+static size_t default_bytes_used = 0;
 
 // NDEF Text record is encoded with either UTF8 or UTF16, this is part of a byte set in the first bits of the
 // payload
@@ -45,7 +45,7 @@ public:
   /// \param bytes vector of bytes (uint8_t) that will be used to attempt to create an NDEFRecord object
   /// \param offset byte offset to start from
   /// \return NDEFRecord object created from bytes
-  static NDEFRecord from_bytes(std::vector<uint8_t> bytes, size_t offset = 0, size_t& bytes_used = bytes_used);
+  static NDEFRecord from_bytes(std::vector<uint8_t> bytes, size_t offset = 0, size_t& bytes_used = default_bytes_used);
 
   // Accessors/Mutators
   void set_id(const std::string& new_id) { this->id_field = new_id; }
