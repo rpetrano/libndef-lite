@@ -14,9 +14,9 @@
 #
 import os
 import sys
+import sphinx_typlog_theme
 
 # sys.path.insert(0, os.path.abspath('.'))
-
 
 # -- Project information -----------------------------------------------------
 
@@ -55,7 +55,7 @@ breathe_default_project = "libndef"
 # Setup the exhale extension
 exhale_args = {
     # These arguments are required
-    "containmentFolder":     "./api",
+   "containmentFolder":     "./api",
     "rootFileName":          "library_root.rst",
     "rootFileTitle":         "Library API",
     "doxygenStripFromPath":  "..",
@@ -64,8 +64,9 @@ exhale_args = {
     # TIP: if using the sphinx-bootstrap-theme, you need
     # "treeViewIsBootstrap": True,
     "exhaleExecutesDoxygen": True,
-    "exhaleDoxygenStdin":    """INPUT = ../include
-EXCLUDE = ../include/catch.hpp
+    # Exclude doctest and include our headers
+    "exhaleDoxygenStdin":    """INPUT = ../include ../src
+EXCLUDE = ../include/doctest.hpp
 """,
     "verboseBuild":          True
     # "exhaleUseDoxyfile":     True
@@ -109,15 +110,17 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+#html_theme = 'sphinx_rtd_theme'
 # html_theme = 'alabaster'
+html_theme = "sphinx_typlog_theme"
+html_theme_path = [sphinx_typlog_theme.get_path()]
 
 # on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
-if not on_rtd:  # only import and set the theme if we're building docs locally
-    import sphinx_rtd_theme
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+#if not on_rtd:  # only import and set the theme if we're building docs locally
+#    import sphinx_rtd_theme
+#    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
