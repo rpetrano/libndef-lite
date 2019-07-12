@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.13)
-project(ndef-lite VERSION 0.0.1)
+cmake_minimum_required(VERSION 3.0)
+project(ndef-lite VERSION 0.0.2)
 
 # Enable building tests by default
 option(NDEF_LITE__DISABLE_TESTS "If tests should be compiled or not" OFF)
@@ -39,6 +39,8 @@ set_target_properties(${PROJECT_NAME}
         DESCRIPTION "NDEF (NFC Data Exchange Format) Message library written in pure C++"
         VERSION "${PROJECT_VERSION}"
 )
+
+target_compile_options(${PROJECT_NAME} PRIVATE -Werror)
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES PUBLIC_HEADER

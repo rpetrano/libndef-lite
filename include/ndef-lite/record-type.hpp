@@ -47,6 +47,13 @@ public:
 
   NDEFRecordType(TypeID id = TypeID::Empty, const std::string& name = "");
 
+  constexpr inline bool operator==(const NDEFRecordType& rhs) const
+  {
+    return (this->type_id == rhs.type_id && this->type_name == rhs.type_name);
+  }
+
+  constexpr inline bool operator!=(const NDEFRecordType& rhs) const { return !(*this == rhs); }
+
   /// \param bytes vector of octets (bytes) of data to create RecordHeader object from
   /// \param offset offset within values vector to start from
   /// \return type value matching value, ::TypeID::Invalid if value does not match any TypeID Name Format field
