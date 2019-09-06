@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(ndef-lite VERSION 0.0.2)
 
 # Enable building tests by default
-option(NDEF_LITE__DISABLE_TESTS "If tests should be compiled or not" OFF)
+option(NDEF_LITE_BUILD_TESTS "If tests should be compiled or not" ON)
 
 set(source_files
     ${CMAKE_CURRENT_SOURCE_DIR}/src/encoding.cpp
