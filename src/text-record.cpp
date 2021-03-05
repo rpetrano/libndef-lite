@@ -105,7 +105,7 @@ string NDEFRecord::get_text() const
 {
   const uint status_byte = this->payload_data.at(0);
   const uint locale_length = status_byte & 0x1f;
-  vector<uint8_t> record_bytes{ this->payload_data.begin() + 1 + locale_length, this->payload_data.end() };
+  vector<uint8_t> record_bytes{ this->payload_data.begin() + locale_length, this->payload_data.end() };
 
   // Convert to UTF-8 string, handling UTF-16 if need be
   if (status_byte & static_cast<uint8_t>(RecordTextCodec::UTF16)) {
